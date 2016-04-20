@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Profile">
+        <EditTextPreference
+            android:defaultValue="@string/name"
+            android:key="@string/etpName"
+            android:title="@string/name"/>
+        <EditTextPreference
+            android:defaultValue="@string/email"
+            android:key="@string/etpEmail"
+            android:title="@string/email"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Review">
+        <ListPreference
+            android:defaultValue="30"
+            android:dialogTitle="How many words would like?"
+            android:entries="@array/list_max_word_count"
+            android:entryValues="@array/list_max_word_count"
+            android:key="@string/lpMaxWordCount"
+            android:title="Max Word Count"/>
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Daily Sentence">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="@string/cbpWifiOnly"
+            android:summary="@string/summary_wifi_only"
+            android:title="@string/wifi_only"/>
+    </PreferenceCategory>
+</PreferenceScreen>

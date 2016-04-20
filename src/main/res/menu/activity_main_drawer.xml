@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:id="@+id/group1" android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_dict"
+            android:icon="@drawable/ic_library_books_white_24dp"
+            android:title="@string/nav_dictionaries"/>
+        <item
+            android:id="@+id/nav_note"
+            android:icon="@drawable/ic_event_note_white_24dp"
+            android:title="@string/nav_notes"/>
+        <item
+            android:id="@+id/nav_review"
+            android:icon="@drawable/ic_schedule"
+            android:title="@string/nav_review"/>
+        <item
+            android:id="@+id/nav_star"
+            android:icon="@drawable/ic_star_white_24dp"
+            android:title="@string/my_stars"/>
+    </group>
+
+    <group android:id="@+id/group2">
+        <item
+            android:id="@+id/nav_setting"
+            android:icon="@drawable/ic_settings_white_24dp"
+            android:title="@string/action_settings"/>
+        <item
+            android:id="@+id/nav_tutorial"
+            android:icon="@drawable/ic_directions_white_24dp"
+            android:title="@string/nav_tutorial"/>
+        <item
+            android:id="@+id/nav_about"
+            android:icon="@drawable/ic_info_white_24dp"
+            android:title="@string/nav_about"/>
+        <item
+            android:id="@+id/nav_quit"
+            android:icon="@drawable/ic_power_settings_new_white_24dp"
+            android:title="@string/nav_quit"/>
+    </group>
+</menu>
