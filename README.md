@@ -32,6 +32,8 @@ Note activity has a overflow button, tap it you will see some action you can do.
 * [android-sqlite-asset-helper](https://github.com/jgilfelt/android-sqlite-asset-helper)
 * [MPAndroidChart](https://github.com/PhilJay/MPAndroidChart)
 * [AppIntro](https://github.com/PaoloRotolo/AppIntro)
+* [XEditText](https://github.com/xingty/XEditText)
+* [android-common](https://github.com/litesuits/android-common)
 
 # License
 [MIT](LICENSE)
