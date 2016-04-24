@@ -5,5 +5,5 @@
     <color name="colorAccent">#EE800080</color>
     
     <color name="colorTransparent">#0000</color>
-    <color name="semiTransparent">#1000</color>
+    <color name="semiTransparent">#3333</color>
 </resources>

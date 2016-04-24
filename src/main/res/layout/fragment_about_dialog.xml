@@ -12,14 +12,20 @@
         android:layout_gravity="center_horizontal"
         android:drawablePadding="10dp"
         android:drawableStart="@mipmap/ic_launcher"
+        android:gravity="center"
         android:text="@string/app_name"
         android:textSize="30sp"/>
+
+    <android.support.v4.widget.Space
+        android:layout_width="match_parent"
+        android:layout_height="30dp"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:drawableStart="@drawable/octocat"
         android:layout_gravity="center_horizontal"
+        android:autoLink="web"
         android:gravity="center"
-        android:text="@string/github_enger"/>
+        android:text="@string/github_enger"
+        android:textColorLink="@color/colorAccent"/>
 </LinearLayout>

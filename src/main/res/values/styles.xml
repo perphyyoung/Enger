@@ -43,5 +43,6 @@
     
     <style name="CustomDialog" parent="Theme.AppCompat.Dialog">
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/semiTransparent</item>
     </style>
 </resources>

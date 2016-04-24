@@ -20,11 +20,9 @@
             android:background="?attr/colorPrimary"
             app:layout_scrollFlags="scroll|enterAlways"
             app:popupTheme="@style/AppTheme.PopupOverlay"/>
-
     </android.support.design.widget.AppBarLayout>
 
     <LinearLayout
-        android:id="@+id/llHeaderContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginLeft="10dp"
@@ -73,7 +71,6 @@
         <include
             android:id="@+id/rvDefinitionContainer"
             layout="@layout/content_main"/>
-
     </LinearLayout>
 
     <android.support.design.widget.FloatingActionButton
@@ -84,5 +81,4 @@
         android:layout_margin="@dimen/fab_margin"
         android:fitsSystemWindows="true"
         android:src="@drawable/ic_add_white_48dp"/>
-
 </android.support.design.widget.CoordinatorLayout>
