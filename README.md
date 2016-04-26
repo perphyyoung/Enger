@@ -5,7 +5,9 @@ For more detail, please check out [wiki](https://github.com/perphyyoung/Enger/wi
 # Screenshots
 ![main](src/main/res/drawable/main.jpg "main")
 ![drawer](src/main/res/drawable/drawer.jpg "drawer")
+![dict](src/main/res/drawable/dict.jpg "dict")
 ![note](src/main/res/drawable/note.jpg "note")
+![note_detail](src/main/res/drawable/note_detail.jpg "note_detail")
 ![daily](src/main/res/drawable/daily.jpg "daily")
 ![star](src/main/res/drawable/star.jpg "star")
 ![review](src/main/res/drawable/review.jpg "review")
