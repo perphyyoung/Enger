@@ -103,40 +103,61 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     @Override
     protected Boolean doInBackground(String... words) {
         word = words[0];
-
-        boolean hasInternalDefinition = true;
+        boolean isInternalEnabled = true;
         int offset = 0, length = 0;
-        internalReader = internalHelper.getReadableDatabase();
-        try (Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
-                new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
-                Consts.DB.COL_WORD + " = ?",
-                new String[]{word}, null, null, null)) {
-            if (c.moveToFirst()) {
-                offset = c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET));
-                length = c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH));
-                internalReader.close();
-            } else {
-                hasInternalDefinition = false;
-            }
+
+        listReader = listHelper.getReadableDatabase();
+        listReader.beginTransaction();
+        String sql = "select " + Consts.DB.COL_ENABLE
+                + " from " + Consts.DB.TABLE_LIST
+                + " where " + Consts.DB.COL_INTERNAL + " = ?";
+        try {
+            SQLiteStatement stmt = listReader.compileStatement(sql);
+            stmt.bindString(1, "1");
+            isInternalEnabled = stmt.simpleQueryForLong() == 1;
+            listReader.setTransactionSuccessful();
+        } catch (SQLException e) {
+            Log.e(TAG, "UpdateDefinitionTask.doInBackground: ", e);
+            e.printStackTrace();
+        } finally {
+            listReader.endTransaction();
+            listReader.close();
         }
 
-        if (hasInternalDefinition) {
-            try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
-                //noinspection ResultOfMethodCallIgnored
-                is.skip(offset);
-                byte[] bytes = new byte[length];
-                if (is.read(bytes) == -1) {
-                    if (DEBUG) Log.i(TAG, "ParseDictCallable.call: Arrive at the end of file!");
+        if (isInternalEnabled) {
+            boolean hasInternalDefinition = true;
+            internalReader = internalHelper.getReadableDatabase();
+            try (Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
+                    new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
+                    Consts.DB.COL_WORD + " = ?",
+                    new String[]{word}, null, null, null)) {
+                if (c.moveToFirst()) {
+                    offset = c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET));
+                    length = c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH));
+                    internalReader.close();
+                } else {
+                    hasInternalDefinition = false;
                 }
-                String definition = new String(bytes, "utf-8");
-                Def def = new Def();
-                def.setInternal(true);
-                def.setDictName(Consts.DB.INTERNAL_DICT_NAME);
-                def.setDef(definition.replaceAll("\n", "<br>"));
-                mDefList.add(def);
-            } catch (IOException e) {
-                Log.e(TAG, "UpdateDefinitionTask.onPreExecute: input stream err", e);
-                e.printStackTrace();
+            }
+
+            if (hasInternalDefinition) {
+                try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
+                    //noinspection ResultOfMethodCallIgnored
+                    is.skip(offset);
+                    byte[] bytes = new byte[length];
+                    if (is.read(bytes) == -1) {
+                        if (DEBUG) Log.i(TAG, "ParseDictCallable.call: Arrive at the end of file!");
+                    }
+                    String definition = new String(bytes, "utf-8");
+                    Def def = new Def();
+                    def.setInternal(true);
+                    def.setDictName(Consts.DB.INTERNAL_DICT_NAME);
+                    def.setDef(definition.replaceAll("\n", "<br>"));
+                    mDefList.add(def);
+                } catch (IOException e) {
+                    Log.e(TAG, "UpdateDefinitionTask.onPreExecute: input stream err", e);
+                    e.printStackTrace();
+                }
             }
         }
 
@@ -145,22 +166,20 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         // 从list中获取父目录(parentPath)和文件名(pureName)
         listReader = listHelper.getReadableDatabase();
         try (Cursor cList = listReader.query(Consts.DB.TABLE_LIST,
-                new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME, Consts.DB.COL_ENABLE},
-                Consts.DB.COL_INTERNAL + " = ?", new String[]{"0"}, null, null, null)) {
+                new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME},
+                Consts.DB.COL_INTERNAL + " = ? and " + Consts.DB.COL_ENABLE + " = ?",
+                new String[]{"0", "1"}, null, null, null)) {
             while (cList.moveToNext()) {
                 String parentPath = cList.getString(cList.getColumnIndex(Consts.DB.COL_PARENT_PATH));
                 String pureName = cList.getString(cList.getColumnIndex(Consts.DB.COL_PURE_NAME));
                 String dictId = "dict" + Math.abs(pureName.hashCode());
-                boolean enable = cList.getInt(cList.getColumnIndex(Consts.DB.COL_ENABLE)) > 0;
                 // 如果对应的dict文件存在
                 if (isFileExists(new File(parentPath), pureName + ".dict")) {
-                    if (enable) {
-                        int[] offsetAndLength = getOffsetAndLength(dictId);
-                        if (offsetAndLength != null) {
-                            offset = offsetAndLength[0];
-                            length = offsetAndLength[1];
-                            getDictNameAndDefinition(parentPath, pureName, dictId, offset, length);
-                        }
+                    int[] offsetAndLength = getOffsetAndLength(dictId);
+                    if (offsetAndLength != null) {
+                        offset = offsetAndLength[0];
+                        length = offsetAndLength[1];
+                        getDictNameAndDefinition(parentPath, pureName, dictId, offset, length);
                     }
                 } else {
                     Log.e(TAG, "UpdateDefinitionTask.doInBackground: " + pureName + ".dict文件不存在", null);

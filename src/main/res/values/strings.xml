@@ -10,6 +10,7 @@
 
     <string name="action_settings">Settings</string>
     <string name="hint_search">Type it here!</string>
+    <string name="user_profile">User Profile</string>
     <string name="name">Your name</string>
     <string name="email">Your email address</string>
 
@@ -25,7 +26,6 @@
 
     <!--dict activity start-->
     <string name="sort_dict_button">Sort Dict Button</string>
-    <string name="user_profile">User Profile</string>
     <!--dict activity end-->
 
     <!--word detail activity start-->
