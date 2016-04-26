@@ -368,9 +368,24 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                         SQLiteDatabase reviewWriter = reviewHelper.getWritableDatabase();
                         reviewWriter.beginTransaction();
                         try {
+                            // query _id
+                            String sql = "select " + ReviewHelper.COL_ID
+                                    + " from " + ReviewHelper.TABLE_NAME
+                                    + " where " + ReviewHelper.COL_WORD + " = ?";
+                            SQLiteStatement stmt = reviewWriter.compileStatement(sql);
+                            stmt.bindString(1, word);
+                            long _id = stmt.simpleQueryForLong();
+                            // delete
                             reviewWriter.delete(ReviewHelper.TABLE_NAME,
-                                    ReviewHelper.COL_WORD + " = ?",
-                                    new String[]{word});
+                                    ReviewHelper.COL_ID + " = ?",
+                                    new String[]{_id + ""});
+                            // update the ids which is greater than _id
+                            sql = "update " + ReviewHelper.TABLE_NAME
+                                    + " set " + ReviewHelper.COL_ID + " = " + ReviewHelper.COL_ID + " - 1"
+                                    + " where " + ReviewHelper.COL_ID + " > ?";
+                            stmt = reviewWriter.compileStatement(sql);
+                            stmt.bindLong(1, _id);
+                            stmt.executeUpdateDelete();
                             reviewWriter.setTransactionSuccessful();
                         } catch (Exception e) {
                             Log.e(TAG, "RvAdapterDefinition.onClick: ", e);
@@ -381,7 +396,12 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                         }
                     } else {//当前不存在，准备插入
                         SQLiteDatabase reviewWriter = reviewHelper.getWritableDatabase();
+                        // query for row count
+                        String sql = "select count(*) from " + ReviewHelper.TABLE_NAME;
+                        SQLiteStatement stmt = reviewWriter.compileStatement(sql);
+                        long rowCount = stmt.simpleQueryForLong();
                         ContentValues cv = new ContentValues(3);
+                        cv.put(ReviewHelper.COL_ID, rowCount + 1); //notice: manually increment
                         cv.put(ReviewHelper.COL_WORD, word);
                         cv.put(ReviewHelper.COL_DEF, defStr);
                         cv.put(ReviewHelper.COL_DATE_ADD, TimeUtils.getSimpleDate());

@@ -2,7 +2,9 @@ package edu.perphy.enger.util;
 
 import com.google.common.primitives.Ints;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Random;
 
 /**
  * Created by perphy on 2016/4/15 0015.
@@ -10,7 +12,7 @@ import java.util.HashSet;
  */
 public class RandomUtils {
     public static int getRandom(int min, int max) {
-        return (int) (Math.random() * max + min);
+        return new Random().nextInt(max) + min;
     }
 
     public static int[] getRandoms(int min, int max, int count) {
@@ -22,13 +24,14 @@ public class RandomUtils {
     }
 
     public static int[] getUniqueRandoms(int min, int max, int count) {
-        HashSet<Integer> hs = new HashSet<>(count);
-        while (hs.size() < count) {
+        ArrayList<Integer> al = new ArrayList<>(count);
+        while (al.size() < count) {
             int random = getRandom(min, max);
-            if (!hs.contains(random)) {
-                hs.add(random);
+            if (!al.contains(random)) {
+                al.add(random);
             }
         }
-        return Ints.toArray(hs);
+        Collections.shuffle(al); // 貌似不太随机，再重新洗牌一次
+        return Ints.toArray(al);
     }
 }

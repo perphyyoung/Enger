@@ -13,31 +13,29 @@ import android.view.ViewGroup;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.adapter.RvAdapterWordStar;
-import edu.perphy.enger.data.Review;
+import edu.perphy.enger.adapter.RvAdapterDailyStar;
+import edu.perphy.enger.data.Daily;
 
 /**
  * A fragment representing a list of Items.
  * <p>
- * Activities containing this fragment MUST implement the {@link OnWordFragmentInteractionListener}
+ * Activities containing this fragment MUST implement the {@link OnDailyFragmentInteractionListener}
  * interface.
  */
-public class WordFragment extends Fragment {
+public class DailyStarFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
-    private OnWordFragmentInteractionListener mListener;
+    private OnDailyFragmentInteractionListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public WordFragment() {
+    public DailyStarFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
-    public static WordFragment newInstance(int columnCount) {
-        WordFragment fragment = new WordFragment();
+    public static DailyStarFragment newInstance(int columnCount) {
+        DailyStarFragment fragment = new DailyStarFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -56,9 +54,8 @@ public class WordFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_word_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_daily_list, container, false);
 
-        // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
@@ -70,20 +67,19 @@ public class WordFragment extends Fragment {
             recyclerView.addItemDecoration(new HorizontalDividerItemDecoration
                     .Builder(context).showLastDivider().build());
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(new RvAdapterWordStar(context, mListener));
+            recyclerView.setAdapter(new RvAdapterDailyStar(context, mListener));
         }
         return view;
     }
 
-
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnWordFragmentInteractionListener) {
-            mListener = (OnWordFragmentInteractionListener) context;
+        if (context instanceof OnDailyFragmentInteractionListener) {
+            mListener = (OnDailyFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnWordFragmentInteractionListener");
+                    + " must implement OnDailyFragmentInteractionListener");
         }
     }
 
@@ -103,7 +99,8 @@ public class WordFragment extends Fragment {
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnWordFragmentInteractionListener {
-        void onWordFragmentInteraction(Review item);
+    public interface OnDailyFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onDailyFragmentInteraction(Daily daily);
     }
 }

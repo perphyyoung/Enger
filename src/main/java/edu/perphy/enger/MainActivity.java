@@ -47,7 +47,7 @@ import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import edu.perphy.enger.adapter.WordAutoCompleteArrayAdapter;
-import edu.perphy.enger.data.OxfordHelper;
+import edu.perphy.enger.db.OxfordHelper;
 import edu.perphy.enger.fragment.AboutDialogFragment;
 import edu.perphy.enger.thread.UpdateDefinitionTask;
 import edu.perphy.enger.util.Consts;
@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity
         // 用户信息
         civAvatar = (CircleImageView) headerView.findViewById(R.id.civAvatar);
         String avatarStr = sp.getString(Consts.SP_AVATAR, null);
-        if(avatarStr != null) {
+        if (avatarStr != null) {
             Picasso.with(mContext)
                     .load(avatarStr)
                     .into(civAvatar);
@@ -178,7 +178,6 @@ public class MainActivity extends AppCompatActivity
             @Override
             public void onClick(View v) {
                 if (notNightMode) {// 当前不是夜晚模式，要设置为夜晚模式
-                    //noinspection WrongConstant Could be compiler error
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
                     ibNightMode.setImageResource(R.drawable.ic_sun_black);
                     sp.edit().putBoolean(Consts.SP_NOT_NIGHT_MODE, false).apply();
@@ -186,7 +185,6 @@ public class MainActivity extends AppCompatActivity
                     Log.i(TAG, "MainActivity.onClick: 改为夜晚模式");
                     recreate();
                 } else {
-                    //noinspection WrongConstant Could be compiler error
                     AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
                     ibNightMode.setImageResource(R.drawable.ic_crescent);
                     sp.edit().putBoolean(Consts.SP_NOT_NIGHT_MODE, true).apply();
@@ -337,17 +335,17 @@ public class MainActivity extends AppCompatActivity
         OxfordHelper oxfordHelper = new OxfordHelper(mContext);
         SQLiteDatabase oxfordReader = oxfordHelper.getReadableDatabase();
         oxfordReader.beginTransaction();
-        try (Cursor c = oxfordReader.query(OxfordHelper.DATABASE_NAME,
+        try (Cursor c = oxfordReader.query(OxfordHelper.TABLE_NAME,
                 new String[]{OxfordHelper.COL_WORD},
                 null, null, null, null, null)) {
             while (c.moveToNext()) {
                 wordList.add(c.getString(c.getColumnIndex(OxfordHelper.COL_WORD)));
             }
             oxfordReader.setTransactionSuccessful();
-        }catch (Exception e){
+        } catch (Exception e) {
             Log.e(TAG, "MainActivity.initialWordList: ", e);
             e.printStackTrace();
-        }finally {
+        } finally {
             oxfordReader.endTransaction();
             oxfordReader.close();
         }
@@ -423,8 +421,8 @@ public class MainActivity extends AppCompatActivity
 
             boolean idxLoaded = sp.getBoolean(Consts.SP_IDX_LOADED, false);
             if (!idxLoaded) {
-                Log.e(TAG, "MyEditorActionListener.onEditorAction: 没有更多的词典", null);
-                Snackbar.make(mactv, "Load more dictionaries  ---->", Snackbar.LENGTH_INDEFINITE)
+                Log.w(TAG, "MyEditorActionListener.onEditorAction: 没有更多的词典");
+                Snackbar.make(mactv, "Load more dictionaries  ---->", Snackbar.LENGTH_LONG)
                         .setAction("LOAD", new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {

@@ -9,6 +9,7 @@ import android.util.Log;
 
 import edu.perphy.enger.R;
 import edu.perphy.enger.util.Consts;
+
 import static edu.perphy.enger.util.Consts.TAG;
 
 /**
@@ -43,12 +44,16 @@ public class DailyHelper extends SQLiteOpenHelper {
         cv.put(Consts.DB.COL_DATE, mContext.getString(R.string.daily_date));
         cv.put(Consts.DB.COL_CONTENT, mContext.getString(R.string.daily_content));
         cv.put(Consts.DB.COL_NOTE, mContext.getString(R.string.daily_note));
+        db.beginTransaction();
         try {
             db.insertOrThrow(Consts.DB.TABLE_DAILY, null, cv);
-            Log.i(TAG, "DailyHelper.onCreate: success");
+            db.setTransactionSuccessful();
         } catch (SQLException e) {
-            e.printStackTrace();
             Log.e(TAG, "DailyHelper.onCreate: err", e);
+            e.printStackTrace();
+        } finally {
+            db.endTransaction();
+            db.close();
         }
     }
 

@@ -20,7 +20,7 @@ import edu.perphy.enger.NoteDetailActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
-import edu.perphy.enger.fragment.DailyFragment.OnDailyFragmentInteractionListener;
+import edu.perphy.enger.fragment.DailyStarFragment.OnDailyFragmentInteractionListener;
 import edu.perphy.enger.util.Consts;
 
 /**

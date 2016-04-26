@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.fragment.NoteFragment.OnNoteFragmentInteractionListener;
+import edu.perphy.enger.fragment.NoteStarFragment.OnNoteFragmentInteractionListener;
 import edu.perphy.enger.util.Consts;
 import static edu.perphy.enger.util.Consts.TAG;
 

@@ -11,5 +11,5 @@
     android:paddingStart="@dimen/activity_horizontal_margin"
     android:paddingEnd="@dimen/activity_horizontal_margin"
     app:layoutManager="LinearLayoutManager"
-    tools:context="edu.perphy.enger.fragment.WordFragment"
+    tools:context=".fragment.ReviewStarFragment"
     tools:listitem="@layout/fragment_word"/>

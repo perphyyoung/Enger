@@ -1,4 +1,4 @@
-package edu.perphy.enger.data;
+package edu.perphy.enger.db;
 
 import android.content.Context;
 
@@ -9,12 +9,13 @@ import com.readystatesoftware.sqliteasset.SQLiteAssetHelper;
  * OxfordHelper
  */
 public class OxfordHelper extends SQLiteAssetHelper {
-    public static final String DATABASE_NAME = "sample_oxford";
+    public static final String TABLE_NAME = "sample_oxford";
     private static final int DATABASE_VERSION = 1;
     public static final int WORD_COUNT = 39429;
+    public static final String COL_ID = "_id";
     public static final String COL_WORD = "word";
 
     public OxfordHelper(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, TABLE_NAME, null, DATABASE_VERSION);
     }
 }

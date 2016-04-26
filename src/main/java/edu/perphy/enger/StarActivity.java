@@ -17,15 +17,15 @@ import android.view.MenuItem;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.data.Review;
-import edu.perphy.enger.fragment.DailyFragment;
-import edu.perphy.enger.fragment.NoteFragment;
-import edu.perphy.enger.fragment.WordFragment;
+import edu.perphy.enger.fragment.DailyStarFragment;
+import edu.perphy.enger.fragment.NoteStarFragment;
+import edu.perphy.enger.fragment.ReviewStarFragment;
 import edu.perphy.enger.util.Consts;
 
 public class StarActivity extends AppCompatActivity
-        implements NoteFragment.OnNoteFragmentInteractionListener,
-        WordFragment.OnWordFragmentInteractionListener,
-        DailyFragment.OnDailyFragmentInteractionListener {
+        implements NoteStarFragment.OnNoteFragmentInteractionListener,
+        ReviewStarFragment.OnWordFragmentInteractionListener,
+        DailyStarFragment.OnDailyFragmentInteractionListener {
     private Context mContext;
 
     @Override
@@ -100,11 +100,11 @@ public class StarActivity extends AppCompatActivity
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return NoteFragment.newInstance(1);//notice 参数为List的列数
+                    return NoteStarFragment.newInstance(1);//notice 参数为List的列数
                 case 1:
-                    return WordFragment.newInstance(1);
+                    return ReviewStarFragment.newInstance(1);
                 default:
-                    return DailyFragment.newInstance(1);
+                    return DailyStarFragment.newInstance(1);
             }
         }
 
@@ -120,7 +120,7 @@ public class StarActivity extends AppCompatActivity
                 case 0:
                     return "Notes";
                 case 1:
-                    return "Words";
+                    return "Review";
                 case 2:
                     return "Daily";
                 default:

@@ -36,7 +36,7 @@
             tools:text="1/23/30"/>
 
         <Button
-            android:id="@+id/pbWord"
+            android:id="@+id/btnWord"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tvPercent"
@@ -51,7 +51,7 @@
             android:id="@+id/wvDef"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_below="@id/pbWord"
+            android:layout_below="@id/btnWord"
             android:layout_marginTop="@dimen/activity_vertical_margin"/>
     </RelativeLayout>
 
@@ -72,5 +72,4 @@
         android:layout_marginBottom="100dp"
         android:layout_marginStart="16dp"
         android:src="@drawable/ic_clear_white_24dp"/>
-
 </android.support.design.widget.CoordinatorLayout>

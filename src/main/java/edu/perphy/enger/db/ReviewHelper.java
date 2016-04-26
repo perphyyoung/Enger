@@ -24,8 +24,8 @@ public class ReviewHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         final String CREATE_TABLE = "create table if not exists " + TABLE_NAME + " ( "
-                + COL_ID + " integer primary key autoincrement, "
-                + COL_WORD + " text not null, " // maybe not unique
+                + COL_ID + " integer primary key, "
+                + COL_WORD + " text not null unique, "
                 + COL_DEF + " text, "
                 + COL_DATE_ADD + " text, "
                 + COL_DATE_REVIEW + " text ) ";

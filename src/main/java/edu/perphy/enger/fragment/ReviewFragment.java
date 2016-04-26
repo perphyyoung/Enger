@@ -1,17 +1,21 @@
 package edu.perphy.enger.fragment;
 
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.AssetManager;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,18 +24,22 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import edu.perphy.enger.R;
+import edu.perphy.enger.data.Review;
 import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.InternalHelper;
+import edu.perphy.enger.db.OxfordHelper;
+import edu.perphy.enger.db.ReviewHelper;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.RandomUtils;
+import edu.perphy.enger.util.TimeUtils;
 
 import static edu.perphy.enger.util.Consts.TAG;
 import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
@@ -46,19 +54,18 @@ import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
  */
 public class ReviewFragment extends Fragment {
     private AssetManager am;
-    private ArrayList<Word> mWordList;
+    private ReviewHelper reviewHelper;
+    private ArrayList<Review> mWordList;
     private ProgressBar pb;
     private TextView tvPercent;
-    private Button pbWord;
+    private Button btnWord;
     private WebView wvDef;
     private FloatingActionButton fabDone, fabForget;
 
     private static final String ARG_MAX_PROGRESS = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private int max_progress;
-    private String mParam2;
+    private int maxProgress;
+    private int reviewCount;
 
     private OnReviewFragmentInteractionListener mListener;
 
@@ -70,16 +77,13 @@ public class ReviewFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param max_progress 复习的单词总数
-     * @param param2       Parameter 2.
+     * @param maxProgress 复习的单词总数
      * @return A new instance of fragment ReviewFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static ReviewFragment newInstance(int max_progress, String param2) {
+    public static ReviewFragment newInstance(int maxProgress) {
         ReviewFragment fragment = new ReviewFragment();
         Bundle args = new Bundle();
-        args.putInt(ARG_MAX_PROGRESS, max_progress);
-        args.putString(ARG_PARAM2, param2);
+        args.putInt(ARG_MAX_PROGRESS, maxProgress);
         fragment.setArguments(args);
         return fragment;
     }
@@ -88,11 +92,11 @@ public class ReviewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         am = getContext().getAssets();
-        mWordList = new ArrayList<>(max_progress);
+        reviewHelper = new ReviewHelper(getContext());
+        mWordList = new ArrayList<>(maxProgress);
 
         if (getArguments() != null) {
-            max_progress = getArguments().getInt(ARG_MAX_PROGRESS);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+            maxProgress = getArguments().getInt(ARG_MAX_PROGRESS);
         }
     }
 
@@ -102,19 +106,17 @@ public class ReviewFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_review, container, false);
 
-        new RandomTask().execute();
-
         pb = (ProgressBar) view.findViewById(R.id.pb);
-        pb.setMax(max_progress);
+        pb.setMax(maxProgress);
         tvPercent = (TextView) view.findViewById(R.id.tvPercent);
-        tvPercent.setText(pb.getProgress() + "/" + pb.getSecondaryProgress() + "/" + max_progress);
+        tvPercent.setText(pb.getProgress() + "/" + pb.getSecondaryProgress() + "/" + maxProgress);
         wvDef = (WebView) view.findViewById(R.id.wvDef);
-        pbWord = (Button) view.findViewById(R.id.pbWord);
-        pbWord.setOnClickListener(new View.OnClickListener() {
+        btnWord = (Button) view.findViewById(R.id.btnWord);
+        btnWord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                pbWord.setText(mWordList.get(pb.getSecondaryProgress()).getWord());
-                pbWord.setClickable(false);
+                btnWord.setText(mWordList.get(pb.getSecondaryProgress()).getWord());
+                btnWord.setClickable(false);
             }
         });
 
@@ -124,7 +126,7 @@ public class ReviewFragment extends Fragment {
             public void onClick(View v) {
                 int progress = pb.getProgress();
                 int secondProgress = pb.getSecondaryProgress();
-                if (secondProgress < max_progress - 1) {
+                if (secondProgress < maxProgress - 1) {
                     pb.setProgress(progress + 1);
                     progressUpdater(secondProgress + 1);
                 } else {
@@ -137,26 +139,81 @@ public class ReviewFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 int secondProgress = pb.getSecondaryProgress();
-                if (secondProgress < max_progress - 1) {
+                if (secondProgress < maxProgress - 1) {
                     progressUpdater(secondProgress + 1);
                 } else {
                     reviewSum(false);
                 }
             }
         });
+
+        SQLiteDatabase reviewReader = reviewHelper.getReadableDatabase();
+        reviewReader.beginTransaction();
+        String sql = "select count(*) from " + ReviewHelper.TABLE_NAME;
+        try {
+            SQLiteStatement stmt = reviewReader.compileStatement(sql);
+            reviewCount = (int) stmt.simpleQueryForLong();
+            reviewReader.setTransactionSuccessful();
+        } catch (SQLException e) {
+            Log.e(TAG, "ReviewFragment.onCreateView: ", e);
+            e.printStackTrace();
+        } finally {
+            reviewReader.endTransaction();
+            reviewReader.close();
+        }
+        boolean isEnoughCount = reviewCount >= maxProgress;
+        if (isEnoughCount) {
+            new RandomTask().execute(reviewCount);
+        } else {
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Generate words to review?")
+                    .setMessage("Your review goal is " + maxProgress
+                            + ", yet your current review library is " + reviewCount
+                            + ". Would you like to generate 50 entries randomly? "
+                            + "Or continue review with current library?")
+                    .setPositiveButton("Generate", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            new GenerateTask().execute();
+                        }
+                    }).setNeutralButton("Continue", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (reviewCount == 0) {
+                        hideButtons();
+                    } else {
+                        maxProgress = reviewCount;
+                        new RandomTask().execute(reviewCount);
+                    }
+                }
+            }).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    hideButtons();
+                }
+            }).show();
+        }
+
         return view;
+    }
+
+    private void hideButtons() {
+        btnWord.setVisibility(View.INVISIBLE);
+        wvDef.loadData("<b>Nothing to review!</b>", "text/html", "utf-8");
+        fabDone.setVisibility(View.GONE);
+        fabForget.setVisibility(View.GONE);
     }
 
     @SuppressLint("SetTextI18n")
     private void progressUpdater(int previewProgress) {
-        new DefTask().execute(previewProgress); // next def
-        pbWord.setText(getString(R.string.tap_to_see));
-        pbWord.setClickable(true);
+        wvDef.loadDataWithBaseURL(null, mWordList.get(previewProgress).getDef().replaceAll("\n", "<br>"), "text/html", "utf-8", null);
+        btnWord.setText(getString(R.string.tap_to_see));
+        btnWord.setClickable(true);
         pb.setSecondaryProgress(previewProgress);
-        tvPercent.setText(pb.getProgress() + "/" + pb.getSecondaryProgress() + "/" + max_progress);
+        tvPercent.setText(pb.getProgress() + "/" + pb.getSecondaryProgress() + "/" + maxProgress);
     }
 
-    private class RandomTask extends AsyncTask<Void, Void, Void> {
+    private class RandomTask extends AsyncTask<Integer, Void, Void> {
         LoadingDialogFragment loadingDialogFragment;
 
         @Override
@@ -166,71 +223,166 @@ public class ReviewFragment extends Fragment {
         }
 
         @Override
-        protected Void doInBackground(Void... params) {
-            String[] randoms = new String[max_progress];
-            int[] randomObjects = RandomUtils.getUniqueRandoms(0, Consts.DB.INTERNAL_DICT_COUNT, max_progress);
-            for (int i = 0; i < max_progress; i++) {
-                randoms[i] = randomObjects[i] + "";
-            }
-
-            InternalHelper internalHelper = new InternalHelper(getContext());
-            SQLiteDatabase internalReader = internalHelper.getReadableDatabase();
-            internalReader.beginTransaction();
-            // http://stackoverflow.com/questions/7418849/in-clause-and-placeholders
-            String sql = "select * from " + Consts.DB.INTERNAL_ID
-                    + " where " + Consts.DB._ID
-                    + " in (" + TextUtils.join(",", Collections.nCopies(max_progress, "?")) + ")";
-            try (Cursor c = internalReader.rawQuery(sql, randoms)) {
-                while (c.moveToNext()) {
-                    Word word = new Word();
-                    word.setWord(c.getString(c.getColumnIndex(Consts.DB.COL_WORD)));
-                    word.setOffset(c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET)));
-                    word.setLength(c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH)));
-                    mWordList.add(word);
+        protected Void doInBackground(Integer... params) {
+            int maxBoundary = params[0];
+            int[] randomIds = RandomUtils.getUniqueRandoms(0, maxBoundary, maxProgress);
+            SQLiteDatabase reviewReader = reviewHelper.getReadableDatabase();
+            reviewReader.beginTransaction();
+            try {
+                for (int i = 0; i < maxProgress; i++) {
+                    Cursor c = reviewReader.query(ReviewHelper.TABLE_NAME,
+                            null,
+                            ReviewHelper.COL_ID + " = ?",
+                            new String[]{(randomIds[i] + 1) + ""},
+                            null, null, null);
+                    if (c.moveToFirst()) {
+                        Review review = new Review();
+                        review.setWord(c.getString(c.getColumnIndex(ReviewHelper.COL_WORD)));
+                        review.setDef(c.getString(c.getColumnIndex(ReviewHelper.COL_DEF)));
+                        mWordList.add(review);
+                        c.close();
+                    }
                 }
-                internalReader.setTransactionSuccessful();
-            } catch (Exception e) {
+                reviewReader.setTransactionSuccessful();
+            } catch (SQLException e) {
                 Log.e(TAG, "RandomTask.doInBackground: ", e);
                 e.printStackTrace();
             } finally {
-                internalReader.endTransaction();
-                internalReader.close();
+                reviewReader.endTransaction();
+                reviewReader.close();
             }
+
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             loadingDialogFragment.dismiss();
-            new DefTask().execute(0);
+            if (mWordList.size() > 0) {
+                wvDef.loadDataWithBaseURL(null, mWordList.get(0).getDef().replaceAll("\n", "<br>"), "text/html", "utf-8", null);
+            }
         }
     }
 
-    private class DefTask extends AsyncTask<Integer, Void, String> {
+    private class GenerateTask extends AsyncTask<Void, Void, Boolean> {
+        LoadingDialogFragment loadingDialogFragment;
+        ArrayList<Review> reviewList;
+
+        @Override
+        protected void onPreExecute() {
+            loadingDialogFragment = new LoadingDialogFragment();
+            loadingDialogFragment.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), TAG_LOADING_DIALOG);
+        }
 
         @SuppressWarnings("ResultOfMethodCallIgnored")
         @Override
-        protected String doInBackground(Integer... params) {
-            int id = params[0];
-            Word word = mWordList.get(id);
-
-            try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
-                is.skip(word.getOffset());
-                byte[] bytes = new byte[word.getLength()];
-                is.read(bytes);
-                String definition = new String(bytes, "utf-8");
-                return definition.replaceAll("\n", "<br>");
-            } catch (IOException e) {
-                Log.e(TAG, "UpdateDefinitionTask.onPreExecute: input stream err", e);
+        protected Boolean doInBackground(Void... params) {
+            int generateCount = 50;
+            // get words
+            String[] randomWords = new String[generateCount];
+            int[] randomIds = RandomUtils.getUniqueRandoms(0, OxfordHelper.WORD_COUNT, generateCount);
+            SQLiteDatabase oxfordReader = new OxfordHelper(getContext()).getReadableDatabase();
+            String sql = "select " + OxfordHelper.COL_WORD
+                    + " from " + OxfordHelper.TABLE_NAME
+                    + " where " + OxfordHelper.COL_ID + " = ?";
+            oxfordReader.beginTransaction();
+            try {
+                SQLiteStatement stmt = oxfordReader.compileStatement(sql);
+                for (int i = 0; i < generateCount; i++) {
+                    stmt.bindString(1, (randomIds[i] + 1) + "");
+                    randomWords[i] = stmt.simpleQueryForString();
+                }
+                oxfordReader.setTransactionSuccessful();
+            } catch (SQLException e) {
+                Log.e(TAG, "GenerateTask.doInBackground: ", e);
                 e.printStackTrace();
-                return null;
+            } finally {
+                oxfordReader.endTransaction();
+                oxfordReader.close();
+            }
+
+            // get offset and length
+            ArrayList<Word> wordList = new ArrayList<>(generateCount);
+            SQLiteDatabase internalReader = new InternalHelper(getContext()).getReadableDatabase();
+            internalReader.beginTransaction();
+            try {
+                for (int i = 0; i < generateCount; i++) {
+                    Word w = new Word();
+                    String word = randomWords[i];
+                    w.setWord(word);
+                    Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
+                            null,
+                            Consts.DB.COL_WORD + " = ?",
+                            new String[]{word}, null, null, null);
+                    if (c.moveToFirst()) {
+                        w.setOffset(c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET)));
+                        w.setLength(c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH)));
+                        c.close();
+                        wordList.add(w);
+                    }
+                }
+                internalReader.setTransactionSuccessful();
+            } catch (SQLException e) {
+                Log.e(TAG, "GenerateTask.doInBackground: ", e);
+                e.printStackTrace();
+            } finally {
+                internalReader.endTransaction();
+                internalReader.close();
+            }
+
+            // get def
+            reviewList = new ArrayList<>(50);
+            try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
+                for (Word w : wordList) {
+                    is.mark(is.available());
+                    is.skip(w.getOffset());
+                    byte[] bytes = new byte[w.getLength()];
+                    is.read(bytes);
+                    is.reset();
+
+                    Review r = new Review();
+                    r.setWord(w.getWord());
+                    r.setDef(new String(bytes, "utf-8"));
+                    reviewList.add(r);
+                }
+            } catch (IOException e) {
+                Log.e(TAG, "GenerateTask.doInBackground: ", e);
+                e.printStackTrace();
+            }
+
+            // insert into review
+            SQLiteDatabase reviewWriter = reviewHelper.getWritableDatabase();
+            reviewWriter.beginTransaction();
+            int currentMaxId = reviewCount;
+            try {
+                for (Review r : reviewList) {
+                    ContentValues cv = new ContentValues(4);
+                    cv.put(ReviewHelper.COL_ID, currentMaxId++);
+                    cv.put(ReviewHelper.COL_WORD, r.getWord());
+                    cv.put(ReviewHelper.COL_DEF, r.getDef().replaceAll("\n", "<br>"));
+                    cv.put(ReviewHelper.COL_DATE_ADD, TimeUtils.getSimpleDate());
+                    reviewWriter.insertWithOnConflict(ReviewHelper.TABLE_NAME, null, cv,
+                            SQLiteDatabase.CONFLICT_IGNORE);
+                }
+                reviewWriter.setTransactionSuccessful();
+                return true;
+            } catch (SQLException e) {
+                Log.e(TAG, "GenerateTask.doInBackground: ", e);
+                e.printStackTrace();
+                return false;
+            } finally {
+                reviewWriter.endTransaction();
+                reviewWriter.close();
             }
         }
 
         @Override
-        protected void onPostExecute(String def) {
-            if (def != null) {
-                wvDef.loadDataWithBaseURL(null, def, "text/html", "utf-8", null);
+        protected void onPostExecute(Boolean isGenerateSuccess) {
+            loadingDialogFragment.dismiss();
+            if (isGenerateSuccess) {
+                new RandomTask().execute(reviewCount + reviewList.size());
+            } else {
+                Toast.makeText(getContext(), "Something is wrong while generating", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -239,19 +391,28 @@ public class ReviewFragment extends Fragment {
     private void reviewSum(boolean correct) {
         fabDone.setVisibility(View.GONE);
         fabForget.setVisibility(View.GONE);
-        pbWord.setVisibility(View.INVISIBLE);
+        btnWord.setVisibility(View.INVISIBLE);
 
         int progress = pb.getProgress();
-        if (correct) progress++;
-        tvPercent.setText(progress + "/" + max_progress + "/" + max_progress);
+        int secondProgress = pb.getSecondaryProgress();
+        if (correct) {
+            progress++;
+            pb.setProgress(progress);
+            pb.setSecondaryProgress(secondProgress + 1);
+        } else {
+            pb.setSecondaryProgress(secondProgress + 1);
+        }
+        tvPercent.setText(progress + "/" + maxProgress + "/" + maxProgress);
 
-        boolean doneAll = progress == max_progress;
+        boolean doneAll = progress == maxProgress;
         String comment;
-        String reviewed = "You have just reviewed " + max_progress + " words, ";
-        if (doneAll) {
+        String reviewed = "You have just reviewed " + maxProgress + " words, ";
+        if (maxProgress < 10) {
+            comment = "Too few to sum up.";
+        } else if (doneAll) {
             comment = "Congratulation! " + reviewed
                     + "and all of them are well remembered.";
-        } else if (progress > (int) (max_progress * 0.75)) {
+        } else if (progress > (int) (maxProgress * 0.75)) {
             comment = "Fortunately. " + reviewed
                     + "and the majority of them are well remembered.";
         } else {
@@ -259,15 +420,9 @@ public class ReviewFragment extends Fragment {
                     + "and you may not achieve your goal. "
                     + "Are you really try your best?";
         }
+        comment = "<b>" + comment + "</b>";
         wvDef.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        wvDef.loadData(comment, "text/plain", "utf-8");
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onReviewFragmentInteraction(uri);
-        }
+        wvDef.loadData(comment, "text/html", "utf-8");
     }
 
     @Override
@@ -292,13 +447,12 @@ public class ReviewFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p/>
+     * <p>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnReviewFragmentInteractionListener {
-        // TODO: Update argument type and name
         void onReviewFragmentInteraction(Uri uri);
     }
 }

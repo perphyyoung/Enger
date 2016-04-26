@@ -13,29 +13,29 @@ import android.view.ViewGroup;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.adapter.RvAdapterNoteStar;
-import edu.perphy.enger.data.Note;
+import edu.perphy.enger.adapter.RvAdapterReviewStar;
+import edu.perphy.enger.data.Review;
 
 /**
  * A fragment representing a list of Items.
- * <br/>
- * Activities containing this fragment MUST implement the {@link OnNoteFragmentInteractionListener}
+ * <p>
+ * Activities containing this fragment MUST implement the {@link OnWordFragmentInteractionListener}
  * interface.
  */
-public class NoteFragment extends Fragment {
+public class ReviewStarFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
-    private OnNoteFragmentInteractionListener mListener;
+    private OnWordFragmentInteractionListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public NoteFragment() {
+    public ReviewStarFragment() {
     }
 
-    public static NoteFragment newInstance(int columnCount) {
-        NoteFragment fragment = new NoteFragment();
+    public static ReviewStarFragment newInstance(int columnCount) {
+        ReviewStarFragment fragment = new ReviewStarFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -54,7 +54,7 @@ public class NoteFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_note_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_word_list, container, false);
 
         // Set the adapter
         if (view instanceof RecyclerView) {
@@ -68,19 +68,20 @@ public class NoteFragment extends Fragment {
             recyclerView.addItemDecoration(new HorizontalDividerItemDecoration
                     .Builder(context).showLastDivider().build());
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(new RvAdapterNoteStar(context, mListener));
+            recyclerView.setAdapter(new RvAdapterReviewStar(context, mListener));
         }
         return view;
     }
 
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnNoteFragmentInteractionListener) {
-            mListener = (OnNoteFragmentInteractionListener) context;
+        if (context instanceof OnWordFragmentInteractionListener) {
+            mListener = (OnWordFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnNoteFragmentInteractionListener");
+                    + " must implement OnWordFragmentInteractionListener");
         }
     }
 
@@ -95,13 +96,12 @@ public class NoteFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p/>
+     * <p>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnNoteFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onNoteFragmentInteraction(Note note);
+    public interface OnWordFragmentInteractionListener {
+        void onWordFragmentInteraction(Review item);
     }
 }

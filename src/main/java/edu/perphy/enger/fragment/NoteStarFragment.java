@@ -13,29 +13,29 @@ import android.view.ViewGroup;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.adapter.RvAdapterDailyStar;
-import edu.perphy.enger.data.Daily;
+import edu.perphy.enger.adapter.RvAdapterNoteStar;
+import edu.perphy.enger.data.Note;
 
 /**
  * A fragment representing a list of Items.
- * <p>
- * Activities containing this fragment MUST implement the {@link OnDailyFragmentInteractionListener}
+ * <br/>
+ * Activities containing this fragment MUST implement the {@link OnNoteFragmentInteractionListener}
  * interface.
  */
-public class DailyFragment extends Fragment {
+public class NoteStarFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
-    private OnDailyFragmentInteractionListener mListener;
+    private OnNoteFragmentInteractionListener mListener;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
      */
-    public DailyFragment() {
+    public NoteStarFragment() {
     }
 
-    public static DailyFragment newInstance(int columnCount) {
-        DailyFragment fragment = new DailyFragment();
+    public static NoteStarFragment newInstance(int columnCount) {
+        NoteStarFragment fragment = new NoteStarFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_COLUMN_COUNT, columnCount);
         fragment.setArguments(args);
@@ -54,8 +54,9 @@ public class DailyFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_daily_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_note_list, container, false);
 
+        // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
             RecyclerView recyclerView = (RecyclerView) view;
@@ -67,7 +68,7 @@ public class DailyFragment extends Fragment {
             recyclerView.addItemDecoration(new HorizontalDividerItemDecoration
                     .Builder(context).showLastDivider().build());
             recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(new RvAdapterDailyStar(context, mListener));
+            recyclerView.setAdapter(new RvAdapterNoteStar(context, mListener));
         }
         return view;
     }
@@ -75,11 +76,11 @@ public class DailyFragment extends Fragment {
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof OnDailyFragmentInteractionListener) {
-            mListener = (OnDailyFragmentInteractionListener) context;
+        if (context instanceof OnNoteFragmentInteractionListener) {
+            mListener = (OnNoteFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnDailyFragmentInteractionListener");
+                    + " must implement OnNoteFragmentInteractionListener");
         }
     }
 
@@ -94,13 +95,13 @@ public class DailyFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.
      */
-    public interface OnDailyFragmentInteractionListener {
+    public interface OnNoteFragmentInteractionListener {
         // TODO: Update argument type and name
-        void onDailyFragmentInteraction(Daily daily);
+        void onNoteFragmentInteraction(Note note);
     }
 }

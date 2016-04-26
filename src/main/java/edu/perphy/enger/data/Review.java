@@ -6,7 +6,7 @@ package edu.perphy.enger.data;
  */
 public class Review {
     private long id;
-    private String word, def, dateAdd, dateReivew;
+    private String word, def, dateAdd, dateReview;
 
     public long getId() {
         return id;
@@ -40,11 +40,11 @@ public class Review {
         this.dateAdd = dateAdd;
     }
 
-    public String getDateReivew() {
-        return dateReivew;
+    public String getDateReview() {
+        return dateReview;
     }
 
-    public void setDateReivew(String dateReivew) {
-        this.dateReivew = dateReivew;
+    public void setDateReview(String dateReview) {
+        this.dateReview = dateReview;
     }
 }

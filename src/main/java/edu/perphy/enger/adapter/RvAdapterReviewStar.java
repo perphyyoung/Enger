@@ -3,6 +3,7 @@ package edu.perphy.enger.adapter;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -17,20 +18,16 @@ import java.util.List;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Review;
 import edu.perphy.enger.db.ReviewHelper;
-import edu.perphy.enger.fragment.WordFragment.OnWordFragmentInteractionListener;
+import edu.perphy.enger.fragment.ReviewStarFragment.OnWordFragmentInteractionListener;
 
 import static edu.perphy.enger.util.Consts.TAG;
 
-/**
- * {@link RecyclerView.Adapter} that can display a {@link Review} and makes a call to the
- * specified {@link OnWordFragmentInteractionListener}.
- */
-public class RvAdapterWordStar extends RecyclerView.Adapter<RvAdapterWordStar.ViewHolder> {
+public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewStar.ViewHolder> {
     private final List<Review> mReviewList;
     private final ReviewHelper reviewHelper;
     private final OnWordFragmentInteractionListener mListener;
 
-    public RvAdapterWordStar(Context context, OnWordFragmentInteractionListener listener) {
+    public RvAdapterReviewStar(Context context, OnWordFragmentInteractionListener listener) {
         mListener = listener;
         reviewHelper = new ReviewHelper(context);
         mReviewList = new ArrayList<>();
@@ -47,7 +44,7 @@ public class RvAdapterWordStar extends RecyclerView.Adapter<RvAdapterWordStar.Vi
             }
             reviewReader.setTransactionSuccessful();
         } catch (Exception e) {
-            Log.e(TAG, "RvAdapterWordStar.RvAdapterWordStar: ", e);
+            Log.e(TAG, "RvAdapterReviewStar.RvAdapterReviewStar: ", e);
             e.printStackTrace();
         } finally {
             reviewReader.endTransaction();
@@ -75,14 +72,30 @@ public class RvAdapterWordStar extends RecyclerView.Adapter<RvAdapterWordStar.Vi
                 SQLiteDatabase reviewWriter = reviewHelper.getWritableDatabase();
                 reviewWriter.beginTransaction();
                 try {
+                    // query _id
+                    String sql = "select " + ReviewHelper.COL_ID
+                            + " from " + ReviewHelper.TABLE_NAME
+                            + " where " + ReviewHelper.COL_WORD + " = ?";
+                    SQLiteStatement stmt = reviewWriter.compileStatement(sql);
+                    stmt.bindString(1, word);
+                    long _id = stmt.simpleQueryForLong();
+                    // delete
                     reviewWriter.delete(ReviewHelper.TABLE_NAME,
-                            ReviewHelper.COL_WORD + " = ?",
-                            new String[]{word});
+                            ReviewHelper.COL_ID + " = ?",
+                            new String[]{_id + ""});
+                    // update the ids which is greater than _id
+                    sql = "update " + ReviewHelper.TABLE_NAME
+                            + " set " + ReviewHelper.COL_ID + " = " + ReviewHelper.COL_ID + " - 1"
+                            + " where " + ReviewHelper.COL_ID + " > ?";
+                    stmt = reviewWriter.compileStatement(sql);
+                    stmt.bindLong(1, _id);
+                    stmt.executeUpdateDelete();
                     reviewWriter.setTransactionSuccessful();
+
                     mReviewList.remove(holder.getAdapterPosition());
                     notifyItemRemoved(holder.getAdapterPosition());
                 } catch (Exception e) {
-                    Log.e(TAG, "RvAdapterWordStar.onClick: ", e);
+                    Log.e(TAG, "RvAdapterReviewStar.onClick: ", e);
                     e.printStackTrace();
                 } finally {
                     reviewWriter.endTransaction();
