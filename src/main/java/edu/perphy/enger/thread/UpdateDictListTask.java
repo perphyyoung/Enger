@@ -105,7 +105,8 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
         try {
             int successfulInsertCount = ft.get();
             if (successfulInsertCount > 0) {
-                Log.i(TAG, "UpdateDictListTask.parseIfoFile: 成功解析" + successfulInsertCount + "个ifo文件");
+                if (DEBUG)
+                    Log.i(TAG, "UpdateDictListTask.parseIfoFile: 成功解析" + successfulInsertCount + "个ifo文件");
                 return true;
             } else {//没有加载新的ifo文件
                 Message msg = myUpdateDictListHandler.obtainMessage();

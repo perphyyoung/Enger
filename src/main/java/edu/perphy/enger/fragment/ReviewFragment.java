@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.data.Review;
 import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.InternalHelper;
 import edu.perphy.enger.db.OxfordHelper;
@@ -55,7 +54,7 @@ import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
 public class ReviewFragment extends Fragment {
     private AssetManager am;
     private ReviewHelper reviewHelper;
-    private ArrayList<Review> mWordList;
+    private ArrayList<Word> mWordList;
     private ProgressBar pb;
     private TextView tvPercent;
     private Button btnWord;
@@ -236,10 +235,10 @@ public class ReviewFragment extends Fragment {
                             new String[]{(randomIds[i] + 1) + ""},
                             null, null, null);
                     if (c.moveToFirst()) {
-                        Review review = new Review();
-                        review.setWord(c.getString(c.getColumnIndex(ReviewHelper.COL_WORD)));
-                        review.setDef(c.getString(c.getColumnIndex(ReviewHelper.COL_DEF)));
-                        mWordList.add(review);
+                        Word w = new Word();
+                        w.setWord(c.getString(c.getColumnIndex(ReviewHelper.COL_WORD)));
+                        w.setDef(c.getString(c.getColumnIndex(ReviewHelper.COL_DEF)));
+                        mWordList.add(w);
                         c.close();
                     }
                 }
@@ -266,7 +265,7 @@ public class ReviewFragment extends Fragment {
 
     private class GenerateTask extends AsyncTask<Void, Void, Boolean> {
         LoadingDialogFragment loadingDialogFragment;
-        ArrayList<Review> reviewList;
+        ArrayList<Word> wordList;
 
         @Override
         protected void onPreExecute() {
@@ -302,7 +301,7 @@ public class ReviewFragment extends Fragment {
             }
 
             // get offset and length
-            ArrayList<Word> wordList = new ArrayList<>(generateCount);
+            wordList = new ArrayList<>(generateCount);
             SQLiteDatabase internalReader = new InternalHelper(getContext()).getReadableDatabase();
             internalReader.beginTransaction();
             try {
@@ -331,19 +330,16 @@ public class ReviewFragment extends Fragment {
             }
 
             // get def
-            reviewList = new ArrayList<>(50);
             try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
+                wordList.trimToSize(); // trim
+
                 for (Word w : wordList) {
                     is.mark(is.available());
                     is.skip(w.getOffset());
                     byte[] bytes = new byte[w.getLength()];
                     is.read(bytes);
+                    w.setDef(new String(bytes, "utf-8"));
                     is.reset();
-
-                    Review r = new Review();
-                    r.setWord(w.getWord());
-                    r.setDef(new String(bytes, "utf-8"));
-                    reviewList.add(r);
                 }
             } catch (IOException e) {
                 Log.e(TAG, "GenerateTask.doInBackground: ", e);
@@ -355,11 +351,11 @@ public class ReviewFragment extends Fragment {
             reviewWriter.beginTransaction();
             int currentMaxId = reviewCount;
             try {
-                for (Review r : reviewList) {
+                for (Word w : wordList) {
                     ContentValues cv = new ContentValues(4);
                     cv.put(ReviewHelper.COL_ID, currentMaxId++);
-                    cv.put(ReviewHelper.COL_WORD, r.getWord());
-                    cv.put(ReviewHelper.COL_DEF, r.getDef().replaceAll("\n", "<br>"));
+                    cv.put(ReviewHelper.COL_WORD, w.getWord());
+                    cv.put(ReviewHelper.COL_DEF, w.getDef().replaceAll("\n", "<br>"));
                     cv.put(ReviewHelper.COL_DATE_ADD, TimeUtils.getSimpleDate());
                     reviewWriter.insertWithOnConflict(ReviewHelper.TABLE_NAME, null, cv,
                             SQLiteDatabase.CONFLICT_IGNORE);
@@ -380,7 +376,7 @@ public class ReviewFragment extends Fragment {
         protected void onPostExecute(Boolean isGenerateSuccess) {
             loadingDialogFragment.dismiss();
             if (isGenerateSuccess) {
-                new RandomTask().execute(reviewCount + reviewList.size());
+                new RandomTask().execute(reviewCount + wordList.size());
             } else {
                 Toast.makeText(getContext(), "Something is wrong while generating", Toast.LENGTH_SHORT).show();
             }
@@ -447,7 +443,7 @@ public class ReviewFragment extends Fragment {
      * fragment to allow an interaction in this fragment to be communicated
      * to the activity and potentially other fragments contained in that
      * activity.
-     * <p>
+     * <p/>
      * See the Android Training lesson <a href=
      * "http://developer.android.com/training/basics/fragments/communicating.html"
      * >Communicating with Other Fragments</a> for more information.

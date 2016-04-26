@@ -16,14 +16,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.data.Review;
+import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.ReviewHelper;
 import edu.perphy.enger.fragment.ReviewStarFragment.OnWordFragmentInteractionListener;
 
 import static edu.perphy.enger.util.Consts.TAG;
 
 public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewStar.ViewHolder> {
-    private final List<Review> mReviewList;
+    private final List<Word> mReviewList;
     private final ReviewHelper reviewHelper;
     private final OnWordFragmentInteractionListener mListener;
 
@@ -37,7 +37,7 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
         try (Cursor c = reviewReader.query(ReviewHelper.TABLE_NAME,
                 null, null, null, null, null, ReviewHelper.COL_DATE_ADD)) {
             while (c.moveToNext()) {
-                Review review = new Review();
+                Word review = new Word();
                 review.setWord(c.getString(c.getColumnIndex(ReviewHelper.COL_WORD)));
                 review.setDef(c.getString(c.getColumnIndex(ReviewHelper.COL_DEF)));
                 mReviewList.add(review);
@@ -60,7 +60,7 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
-        final Review review = mReviewList.get(position);
+        final Word review = mReviewList.get(position);
         holder.mItem = review;
         final String word = review.getWord();
         holder.tvWord.setText(word);
@@ -125,7 +125,7 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
         public final View mView;
         public final TextView tvWord, tvDef;
         private final ImageButton ibStar;
-        private Review mItem;
+        private Word mItem;
 
         public ViewHolder(View view) {
             super(view);

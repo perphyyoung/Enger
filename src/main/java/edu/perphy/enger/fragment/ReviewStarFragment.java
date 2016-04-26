@@ -14,7 +14,7 @@ import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
 import edu.perphy.enger.R;
 import edu.perphy.enger.adapter.RvAdapterReviewStar;
-import edu.perphy.enger.data.Review;
+import edu.perphy.enger.data.Word;
 
 /**
  * A fragment representing a list of Items.
@@ -102,6 +102,6 @@ public class ReviewStarFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnWordFragmentInteractionListener {
-        void onWordFragmentInteraction(Review item);
+        void onWordFragmentInteraction(Word item);
     }
 }

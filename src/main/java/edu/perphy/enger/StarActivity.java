@@ -16,7 +16,7 @@ import android.view.MenuItem;
 
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.data.Note;
-import edu.perphy.enger.data.Review;
+import edu.perphy.enger.data.Word;
 import edu.perphy.enger.fragment.DailyStarFragment;
 import edu.perphy.enger.fragment.NoteStarFragment;
 import edu.perphy.enger.fragment.ReviewStarFragment;
@@ -81,7 +81,7 @@ public class StarActivity extends AppCompatActivity
     }
 
     @Override
-    public void onWordFragmentInteraction(Review item) {
+    public void onWordFragmentInteraction(Word item) {
     }
 
     /**
