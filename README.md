@@ -23,6 +23,17 @@ Put your decompressed files (contain *.dict, *.idx, *.ifo) into the **Enger/dic*
 ### How to import and export note
 Note activity has a overflow button, tap it you will see some action you can do.
 
+# Introduction
+* [General](https://github.com/perphyyoung/Enger/wiki)
+* [Main Activity](https://github.com/perphyyoung/Enger/wiki/Main-Activity)
+* [Drawer Menu](https://github.com/perphyyoung/Enger/wiki/Drawer-Menu)
+* [Dict Activity](https://github.com/perphyyoung/Enger/wiki/Dict-Activity)
+* [Note List Activity](https://github.com/perphyyoung/Enger/wiki/Note-List-Activity)
+* [Note Detail Activity](https://github.com/perphyyoung/Enger/wiki/Note-Detail-Activity)
+* [Daily Sentence Activity](https://github.com/perphyyoung/Enger/wiki/Daily-Sentence-Activity)
+* [Star Activity](https://github.com/perphyyoung/Enger/wiki/Star-Activity)
+* [Review Activity](https://github.com/perphyyoung/Enger/wiki/Review-Activity)
+
 # Third Part Libraries
 * [guava](https://github.com/google/guava)
 * [picasso](https://github.com/square/picasso)
