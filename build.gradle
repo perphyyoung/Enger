@@ -24,6 +24,12 @@ android {
         }
     }
     productFlavors {
+        app {
+            minSdkVersion 19
+        }
+        instant {
+            minSdkVersion 21
+        }
     }
     dexOptions {
         javaMaxHeapSize "2g"

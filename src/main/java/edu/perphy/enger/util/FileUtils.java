@@ -14,14 +14,14 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import static edu.perphy.enger.util.Consts.TAG;
+import static edu.perphy.enger.util.Consts.DEBUG;
+
 /**
  * Created by perphy on 2016/2/18 0018.
  * 文件操作工具类
  */
 public class FileUtils {
-    private static final boolean DEBUG = true;
-    private static final String TAG = "PY";
-
     /**
      * Checks if external storage is available for read and write
      */

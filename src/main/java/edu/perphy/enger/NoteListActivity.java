@@ -67,7 +67,8 @@ public class NoteListActivity extends AppCompatActivity {
             case R.id.action_import:
                 new AlertDialog.Builder(mContext)
                         .setTitle("Import notes")
-                        .setMessage("This action only works when there are not identical title in json file and current database. Continue?")
+                        .setMessage("This action will discard the note entries in json file " +
+                                "which has identical title with current list. Continue?")
                         .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {

@@ -1,9 +1,9 @@
 package edu.perphy.enger.thread;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteStatement;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
@@ -104,19 +104,19 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
 
     private boolean insert2note() {
         SQLiteDatabase noteWriter = noteHelper.getWritableDatabase();
+        noteWriter.beginTransaction();
         try {
-            noteWriter.beginTransaction();
-            String sql = "insert into " + Consts.DB.TABLE_NOTE
-                    + " ( " + Consts.DB.COL_TITLE + ", "
-                    + Consts.DB.COL_CONTENT + ", "
-                    + Consts.DB.COL_STAR + ", "
-                    + Consts.DB.COL_CREATE_TIME + ", "
-                    + Consts.DB.COL_MODIFY_TIME + " ) values (?, ?, ?, ?, ? )";
-            SQLiteStatement statement = noteWriter.compileStatement(sql);
-            for (Note note : mNoteList) {
-                statement.bindAllArgsAsStrings(new String[]
-                        {note.getTitle(), note.getContent(), note.getStarred(), note.getCreateTime(), note.getModifyTime()});
-                statement.executeInsert();
+            for (Note n : mNoteList) {
+                ContentValues cv = new ContentValues();
+                cv.put(Consts.DB.COL_TITLE, n.getTitle());
+                cv.put(Consts.DB.COL_CONTENT, n.getContent());
+                cv.put(Consts.DB.COL_STAR, n.getStarred());
+                cv.put(Consts.DB.COL_CREATE_TIME, n.getCreateTime());
+                cv.put(Consts.DB.COL_MODIFY_TIME, n.getModifyTime());
+                noteWriter.insertWithOnConflict(Consts.DB.TABLE_NOTE,
+                        null,
+                        cv,
+                        SQLiteDatabase.CONFLICT_IGNORE); // ignore (not insert or change) if conflict occur
             }
             noteWriter.setTransactionSuccessful();
             return true;
