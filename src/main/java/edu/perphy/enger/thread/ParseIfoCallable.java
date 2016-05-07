@@ -32,11 +32,9 @@ import static edu.perphy.enger.util.Consts.DEBUG;
  */
 public class ParseIfoCallable implements Callable<Integer> {
     private Context context;
-    private HandlerThread handlerThread;
     private MyIfoHandler myIfoHandler;
     private DictListHelper listHelper;
     private DictInfoHelper infoHelper;
-    private SQLiteDatabase listReader, infoReader, infoWriter;
 
     private ArrayList<HashMap<String, String>> al;
     private int successfulInsertCount = 0;
@@ -47,7 +45,7 @@ public class ParseIfoCallable implements Callable<Integer> {
         listHelper = new DictListHelper(context);
         infoHelper = new DictInfoHelper(context);
 
-        handlerThread = new HandlerThread(Consts.HANDLER_THREAD_DICT);
+        HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_DICT);
         handlerThread.start();
         myIfoHandler = new MyIfoHandler(handlerThread.getLooper());
     }
@@ -57,7 +55,7 @@ public class ParseIfoCallable implements Callable<Integer> {
         al = new ArrayList<>();
 
         // 从list数据库中读取ifo文件的父目录和具体的文件名
-        listReader = listHelper.getReadableDatabase();
+        SQLiteDatabase listReader = listHelper.getReadableDatabase();
         Cursor c = listReader.query(Consts.DB.TABLE_LIST,
                 new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME},
                 Consts.DB.COL_INTERNAL + " = ?", new String[]{0 + ""},
@@ -69,7 +67,7 @@ public class ParseIfoCallable implements Callable<Integer> {
             String dictId = "dict" + Math.abs(pureName.hashCode());
 
             // 从info中查询是否已加载此ifo文件
-            infoReader = infoHelper.getReadableDatabase();
+            SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
             String sql = "select count(*) from " + Consts.DB.TABLE_INFO +
                     " where " + Consts.DB.COL_DICT_ID + " = ?";
             SQLiteStatement statement = infoReader.compileStatement(sql);
@@ -157,7 +155,7 @@ public class ParseIfoCallable implements Callable<Integer> {
             values.put(Consts.DB.COL_WEBSITE, (String) hm.get(Consts.DB.COL_WEBSITE));
             values.put(Consts.DB.COL_WORD_COUNT, (String) hm.get(Consts.DB.COL_WORD_COUNT));
         }
-        infoWriter = infoHelper.getWritableDatabase();
+        SQLiteDatabase infoWriter = infoHelper.getWritableDatabase();
         boolean success = infoWriter.insertOrThrow(Consts.DB.TABLE_INFO, null, values) != -1;
         infoWriter.close();
         if (success) {

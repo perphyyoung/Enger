@@ -49,8 +49,6 @@ public class WordAutoCompleteArrayAdapter extends ArrayAdapter<String> implement
     }
 
     private class ArrayFilter extends Filter {
-        //        final private Object lock = this;
-
         @Override
         protected FilterResults performFiltering(CharSequence prefix) {
             FilterResults results = new FilterResults();
@@ -72,8 +70,7 @@ public class WordAutoCompleteArrayAdapter extends ArrayAdapter<String> implement
 
                 for (int i = 0; i < count; ++i) {
                     String item = list.get(i);
-                    String tmpItem = item;
-                    if (tmpItem.toLowerCase().startsWith(prefixString)) {
+                    if (item.toLowerCase().startsWith(prefixString)) {
                         newList.add(item);
                     }
                 }

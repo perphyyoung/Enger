@@ -51,7 +51,6 @@ public class ExportNoteTask extends AsyncTask<Void, Integer, Integer> {
                 null, null, null, null, null, null)) {
             noteArray = new JSONArray();
             while (c.moveToNext()) {
-                //notice cannot bind boolean?
                 JSONObject note = new JSONObject();
                 note.put(Consts.DB.COL_TITLE, c.getString(c.getColumnIndex(Consts.DB.COL_TITLE)));
                 note.put(Consts.DB.COL_CONTENT, c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT)));

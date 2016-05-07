@@ -64,16 +64,13 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
 
     private Context mContext;
     private AssetManager am;
-    private HandlerThread handlerThread;
     private MyDefinitionHandler myDefinitionHandler;
     private RecyclerView rvDefinitionContainer;
     LoadingDialogFragment loadingDialogFragment;
 
     private InternalHelper internalHelper;
     private DictListHelper listHelper;
-    private StarDictHelper dictHelper;
     private DictInfoHelper infoHelper;
-    private SQLiteDatabase internalReader, listReader, dictReader, infoReader;
     private RvAdapterDefinition rvAdapterDefinition;
 
     public UpdateDefinitionTask(Context context) {
@@ -88,7 +85,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         rvDefinitionContainer = (RecyclerView) ((AppCompatActivity) context).findViewById(R.id.rvDefinitionContainer);
         rvDefinitionContainer.setLayoutManager(new LinearLayoutManager(mContext));
 
-        handlerThread = new HandlerThread(Consts.HANDLER_THREAD_DEFINITION);
+        HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_DEFINITION);
         handlerThread.start();
         myDefinitionHandler = new MyDefinitionHandler(handlerThread.getLooper());
     }
@@ -106,7 +103,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         boolean isInternalEnabled = true;
         int offset = 0, length = 0;
 
-        listReader = listHelper.getReadableDatabase();
+        SQLiteDatabase listReader = listHelper.getReadableDatabase();
         listReader.beginTransaction();
         String sql = "select " + Consts.DB.COL_ENABLE
                 + " from " + Consts.DB.TABLE_LIST
@@ -126,7 +123,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
 
         if (isInternalEnabled) {
             boolean hasInternalDefinition = true;
-            internalReader = internalHelper.getReadableDatabase();
+            SQLiteDatabase internalReader = internalHelper.getReadableDatabase();
             try (Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
                     new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
                     Consts.DB.COL_WORD + " = ?",
@@ -146,7 +143,8 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                     is.skip(offset);
                     byte[] bytes = new byte[length];
                     if (is.read(bytes) == -1) {
-                        if (DEBUG) Log.i(TAG, "UpdateDefinitionTask.doInBackground: Arrive at the end of file!");
+                        if (DEBUG)
+                            Log.i(TAG, "UpdateDefinitionTask.doInBackground: Arrive at the end of file!");
                     }
                     String definition = new String(bytes, "utf-8");
                     Def def = new Def();
@@ -231,8 +229,8 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     @Nullable
     private int[] getOffsetAndLength(String dictId) {
         int[] offsetAndLength = new int[2];
-        dictHelper = new StarDictHelper(mContext, dictId);
-        dictReader = dictHelper.getReadableDatabase();
+        StarDictHelper dictHelper = new StarDictHelper(mContext, dictId);
+        SQLiteDatabase dictReader = dictHelper.getReadableDatabase();
         // 如果有对应词条
         try (Cursor cDict = dictReader.query(dictId,
                 new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
@@ -242,7 +240,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                 offsetAndLength[0] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(Consts.DB.COL_OFFSET)));
                 offsetAndLength[1] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(Consts.DB.COL_LENGTH)));
             } else {
-                Log.w(TAG, "UpdateDefinitionTask.getOffsetAndLength: 没有对应词条", null);
+                if (DEBUG) Log.w(TAG, "UpdateDefinitionTask.getOffsetAndLength: 没有对应词条", null);
                 return null;
             }
         }
@@ -308,7 +306,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
      */
     private String[] getDictNameAndContentType(String dictId) {
         String[] dictNameAndContentType = new String[2];
-        infoReader = infoHelper.getReadableDatabase();
+        SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
         try (Cursor c = infoReader.query(Consts.DB.TABLE_INFO,
                 new String[]{Consts.DB.COL_BOOK_NAME, Consts.DB.COL_CONTENT_TYPE},
                 Consts.DB.COL_DICT_ID + " = ? ",

@@ -39,10 +39,7 @@ public class ParseIdxCallable implements Callable<Integer> {
 
     private DictListHelper listHelper;
     private DictInfoHelper infoHelper;
-    private StarDictHelper starDictHelper;
-    private SQLiteDatabase listReader, listWriter, infoReader, dictReader, dictWriter;
     private Context context;
-    private HandlerThread handlerThread;
     private MyIdxHandler myIdxHandler;
     private int successfulLoadCount = 0;
     private StringBuilder sb;
@@ -53,7 +50,7 @@ public class ParseIdxCallable implements Callable<Integer> {
         infoHelper = new DictInfoHelper(context);
         sb = new StringBuilder();
 
-        handlerThread = new HandlerThread(Consts.HANDLER_THREAD_IDX);
+        HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_IDX);
         handlerThread.start();
         myIdxHandler = new MyIdxHandler(handlerThread.getLooper());
     }
@@ -61,7 +58,7 @@ public class ParseIdxCallable implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         // 从list中获取parentPath, pureName
-        listReader = listHelper.getReadableDatabase();
+        SQLiteDatabase listReader = listHelper.getReadableDatabase();
         Cursor c = listReader.query(Consts.DB.TABLE_LIST,
                 new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME},
                 Consts.DB.COL_INTERNAL + " = ? and " + Consts.DB.COL_IDX_LOADED + " = ?", // 不是内置，也没有加载过
@@ -89,7 +86,7 @@ public class ParseIdxCallable implements Callable<Integer> {
 
         if(!TextUtils.isEmpty(sb.toString())) {
             String[] dictIds = sb.toString().split(Consts.DICT_SEPARATOR);
-            listWriter = listHelper.getWritableDatabase();
+            SQLiteDatabase listWriter = listHelper.getWritableDatabase();
             listWriter.beginTransaction();
             for(String dictId : dictIds) {
                 if(!TextUtils.isEmpty(dictId)) {
@@ -119,9 +116,8 @@ public class ParseIdxCallable implements Callable<Integer> {
     public boolean parseIdxFile(final String parentPath, final String pureName) {
         final String dictId = "dict" + Math.abs(pureName.hashCode());
 
-        infoReader = infoHelper.getReadableDatabase();
-        starDictHelper = new StarDictHelper(context, dictId);
-        dictReader = starDictHelper.getReadableDatabase();
+        SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
+        StarDictHelper starDictHelper = new StarDictHelper(context, dictId);
 
         int wordSum;
         // 从info中获取单词的总数目
@@ -136,7 +132,7 @@ public class ParseIdxCallable implements Callable<Integer> {
         if (DEBUG) Log.i(TAG, "ParseIdxCallable.parseIdxFile: wordSum = " + wordSum);
         final int maxCount = wordSum;
 
-        dictWriter = starDictHelper.getWritableDatabase();
+        SQLiteDatabase dictWriter = starDictHelper.getWritableDatabase();
         try (InputStream is = new BufferedInputStream(
                 new FileInputStream(parentPath + File.separator + pureName + ".idx"))) {
             ArrayList<HashMap> al = new ArrayList<>(maxCount);

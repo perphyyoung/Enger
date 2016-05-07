@@ -1,10 +1,7 @@
 package edu.perphy.enger.util;
 
-import android.graphics.PixelFormat;
 import android.os.Environment;
 import android.provider.BaseColumns;
-import android.support.design.widget.CoordinatorLayout;
-import android.view.WindowManager;
 
 import java.io.File;
 
@@ -94,7 +91,6 @@ public class Consts {
     public static final String SP_HISTORY = "history";
     public static final String SP_FIRST_RUN = "firstRun";
     public static final String SP_NOT_NIGHT_MODE = "nightMode";
-    public static final String SP_HAS_DIY_DICT = "hasDiyDict";
     public static final String SP_IDX_LOADED = "idxLoaded";
     public static final String SP_AVATAR = "avatar";
 
@@ -126,18 +122,7 @@ public class Consts {
     public static final int PARSE_DICT_NOT_EXISTS = 32;
     public static final int PARSE_DICT_INPUT_SCREAM_ERR = 33;
 
-    public static final String NOTE_READ_ONLY = "readOnly";
-
     public static final String TAG_LOADING_DIALOG = "loadingDialog";
-
-
-    // TODO: 2016/3/20 0020 to be delete
-    public static final WindowManager.LayoutParams PARAMS = new WindowManager.LayoutParams(
-            CoordinatorLayout.LayoutParams.MATCH_PARENT, CoordinatorLayout.LayoutParams.MATCH_PARENT,
-            WindowManager.LayoutParams.TYPE_APPLICATION,
-            WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
-                    | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
-            PixelFormat.TRANSLUCENT);
 }
 
 

@@ -31,9 +31,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
     private SharedPreferences preferences;
     private FloatingActionButton fab;
     private RecyclerView rvDict;
-    private RvAdapterDictList mAdapter;
 
-    private HandlerThread handlerThread;
     private MyUpdateDictListHandler myUpdateDictListHandler;
 
     public UpdateDictListTask(Context context) {
@@ -41,7 +39,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
         this.preferences = context.getSharedPreferences(Consts.SP_NAME, Context.MODE_PRIVATE);
         this.rvDict = (RecyclerView) ((AppCompatActivity) context).findViewById(R.id.rvDict);
 
-        handlerThread = new HandlerThread(Consts.HANDLER_THREAD_UPDATE_DICT_LIST);
+        HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_UPDATE_DICT_LIST);
         handlerThread.start();
         myUpdateDictListHandler = new MyUpdateDictListHandler(handlerThread.getLooper());
     }
@@ -162,7 +160,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
         if (success) {
             preferences.edit().putBoolean(Consts.SP_IDX_LOADED, true).apply();
 
-            mAdapter = new RvAdapterDictList(mContext);
+            RvAdapterDictList mAdapter = new RvAdapterDictList(mContext);
             rvDict.setAdapter(mAdapter);
         }
 

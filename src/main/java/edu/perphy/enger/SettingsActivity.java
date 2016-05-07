@@ -25,10 +25,8 @@ import edu.perphy.enger.util.Consts;
 
 public class SettingsActivity extends PreferenceActivity
         implements SharedPreferences.OnSharedPreferenceChangeListener {
-    private Toolbar mToolbar;
     private EditTextPreference etpName, etpEmail;
     private ListPreference lpMaxWordCount;
-    private CheckBoxPreference cbpWifiOnly;
 
     @SuppressWarnings("deprecation")
     @Override
@@ -45,7 +43,7 @@ public class SettingsActivity extends PreferenceActivity
         lpMaxWordCount = (ListPreference) findPreference(getString(R.string.lpMaxWordCount));
         lpMaxWordCount.setSummary(getString(R.string.lpMaxWordCountSummary, Integer.parseInt(lpMaxWordCount.getValue())));
 
-        cbpWifiOnly = (CheckBoxPreference) findPreference(getString(R.string.cbpWifiOnly));
+        CheckBoxPreference cbpWifiOnly = (CheckBoxPreference) findPreference(getString(R.string.cbpWifiOnly));
         cbpWifiOnly.setSummaryOn(R.string.summary_wifi_only);
         cbpWifiOnly.setSummaryOff(R.string.summary_wifi_both);
     }
@@ -55,7 +53,7 @@ public class SettingsActivity extends PreferenceActivity
         ViewGroup contentView = (ViewGroup) LayoutInflater.from(this).inflate(
                 R.layout.activity_settings, new LinearLayout(this), false);
 
-        mToolbar = (Toolbar) contentView.findViewById(R.id.toolbar);
+        Toolbar mToolbar = (Toolbar) contentView.findViewById(R.id.toolbar);
         mToolbar.setTitle(getTitle());
         mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override

@@ -310,7 +310,7 @@ public class DailyActivity extends AppCompatActivity {
      *
      * @return 1:star 0:unstar -1:error
      */
-    private int getStarStatus() {// FIXME: 2016/4/13 0013
+    private int getStarStatus() {
         SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
         dailyReader.beginTransaction();
         try {
