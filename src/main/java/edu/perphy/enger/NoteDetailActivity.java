@@ -20,9 +20,8 @@ import android.view.View;
 import com.material.widget.FloatingEditText;
 
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.util.Consts;
-import edu.perphy.enger.util.TimeUtils;
 import edu.perphy.enger.util.NullUtils;
+import edu.perphy.enger.util.TimeUtils;
 import edu.perphy.enger.util.Toaster;
 
 import static edu.perphy.enger.util.Consts.DEBUG;
@@ -67,9 +66,9 @@ public class NoteDetailActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         Intent intent = getIntent();
-        tobeSave = intent.getBooleanExtra(Consts.DB.COL_TOBE_SAVE, false);
-        title = NullUtils.null2empty(intent.getStringExtra(Consts.DB.COL_TITLE));
-        content = NullUtils.null2empty(intent.getStringExtra(Consts.DB.COL_CONTENT));
+        tobeSave = intent.getBooleanExtra(NoteHelper.COL_TOBE_SAVE, false);
+        title = NullUtils.null2empty(intent.getStringExtra(NoteHelper.COL_TITLE));
+        content = NullUtils.null2empty(intent.getStringExtra(NoteHelper.COL_CONTENT));
 
         fetTitle.setText(title);
         fetContent.setText(content);
@@ -172,17 +171,17 @@ public class NoteDetailActivity extends AppCompatActivity {
         noteWriter.beginTransaction();
 
         try {
-            String sql = "select " + Consts.DB._ID
-                    + " from " + Consts.DB.TABLE_NOTE
-                    + " where " + Consts.DB.COL_TITLE + " = ?";
+            String sql = "select " + NoteHelper._ID
+                    + " from " + NoteHelper.TABLE_NAME
+                    + " where " + NoteHelper.COL_TITLE + " = ?";
             SQLiteStatement statement = noteWriter.compileStatement(sql);
             statement.bindString(1, title);
             int id = (int) statement.simpleQueryForLong();
 
             ContentValues cv = new ContentValues(2);
-            cv.put(changeType == CHANGE_CONTENT ? Consts.DB.COL_CONTENT : Consts.DB.COL_TITLE, newStr);
-            cv.put(Consts.DB.COL_MODIFY_TIME, TimeUtils.getSimpleDateTime());
-            noteWriter.update(Consts.DB.TABLE_NOTE, cv, Consts.DB._ID + "= ?", new String[]{id + ""});
+            cv.put(changeType == CHANGE_CONTENT ? NoteHelper.COL_CONTENT : NoteHelper.COL_TITLE, newStr);
+            cv.put(NoteHelper.COL_MODIFY_TIME, TimeUtils.getSimpleDateTime());
+            noteWriter.update(NoteHelper.TABLE_NAME, cv, NoteHelper._ID + "= ?", new String[]{id + ""});
             noteWriter.setTransactionSuccessful();
         } catch (Exception e) {
             Log.e(TAG, "NoteDetailActivity.updateSpecificNote: update err", e);
@@ -202,12 +201,12 @@ public class NoteDetailActivity extends AppCompatActivity {
         String simpleDateTime = TimeUtils.getSimpleDateTime();
         try {
             ContentValues cv = new ContentValues(4);
-            cv.put(Consts.DB.COL_TITLE, fetTitle.getText().toString().trim());
-            cv.put(Consts.DB.COL_CONTENT, fetContent.getText().toString().trim());
-            cv.put(Consts.DB.COL_CREATE_TIME, simpleDateTime);
-            cv.put(Consts.DB.COL_MODIFY_TIME, simpleDateTime);
+            cv.put(NoteHelper.COL_TITLE, fetTitle.getText().toString().trim());
+            cv.put(NoteHelper.COL_CONTENT, fetContent.getText().toString().trim());
+            cv.put(NoteHelper.COL_CREATE_TIME, simpleDateTime);
+            cv.put(NoteHelper.COL_MODIFY_TIME, simpleDateTime);
 
-            noteWriter.insertOrThrow(Consts.DB.TABLE_NOTE, null, cv);
+            noteWriter.insertOrThrow(NoteHelper.TABLE_NAME, null, cv);
             noteWriter.setTransactionSuccessful();
         } catch (SQLException e) {
             if (DEBUG) Log.e(TAG, "WordDetailActivity.insertIntoDetailDb: insert into note err", e);

@@ -17,10 +17,10 @@ import android.view.MenuItem;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.data.Word;
+import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.DailyStarFragment;
 import edu.perphy.enger.fragment.NoteStarFragment;
 import edu.perphy.enger.fragment.ReviewStarFragment;
-import edu.perphy.enger.util.Consts;
 
 public class StarActivity extends AppCompatActivity
         implements NoteStarFragment.OnNoteFragmentInteractionListener,
@@ -71,8 +71,8 @@ public class StarActivity extends AppCompatActivity
     @Override
     public void onNoteFragmentInteraction(Note note) {
         Intent intent = new Intent(mContext, NoteDetailActivity.class);
-        intent.putExtra(Consts.DB.COL_TITLE, note.getTitle());
-        intent.putExtra(Consts.DB.COL_CONTENT, note.getContent());
+        intent.putExtra(NoteHelper.COL_TITLE, note.getTitle());
+        intent.putExtra(NoteHelper.COL_CONTENT, note.getContent());
         startActivity(intent);
     }
 

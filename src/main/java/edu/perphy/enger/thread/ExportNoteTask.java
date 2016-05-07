@@ -47,16 +47,16 @@ public class ExportNoteTask extends AsyncTask<Void, Integer, Integer> {
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
         JSONArray noteArray = null;
         noteReader.beginTransaction();
-        try (Cursor c = noteReader.query(Consts.DB.TABLE_NOTE,
+        try (Cursor c = noteReader.query(NoteHelper.TABLE_NAME,
                 null, null, null, null, null, null)) {
             noteArray = new JSONArray();
             while (c.moveToNext()) {
                 JSONObject note = new JSONObject();
-                note.put(Consts.DB.COL_TITLE, c.getString(c.getColumnIndex(Consts.DB.COL_TITLE)));
-                note.put(Consts.DB.COL_CONTENT, c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT)));
-                note.put(Consts.DB.COL_STAR, c.getString(c.getColumnIndex(Consts.DB.COL_STAR)));
-                note.put(Consts.DB.COL_CREATE_TIME, c.getString(c.getColumnIndex(Consts.DB.COL_CREATE_TIME)));
-                note.put(Consts.DB.COL_MODIFY_TIME, c.getString(c.getColumnIndex(Consts.DB.COL_MODIFY_TIME)));
+                note.put(NoteHelper.COL_TITLE, c.getString(c.getColumnIndex(NoteHelper.COL_TITLE)));
+                note.put(NoteHelper.COL_CONTENT, c.getString(c.getColumnIndex(NoteHelper.COL_CONTENT)));
+                note.put(NoteHelper.COL_STAR, c.getString(c.getColumnIndex(NoteHelper.COL_STAR)));
+                note.put(NoteHelper.COL_CREATE_TIME, c.getString(c.getColumnIndex(NoteHelper.COL_CREATE_TIME)));
+                note.put(NoteHelper.COL_MODIFY_TIME, c.getString(c.getColumnIndex(NoteHelper.COL_MODIFY_TIME)));
                 noteArray.put(note);
             }
             noteReader.setTransactionSuccessful();

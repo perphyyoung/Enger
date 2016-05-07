@@ -76,9 +76,9 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     public UpdateDefinitionTask(Context context) {
         this.mContext = context;
         am = context.getAssets();
-        internalHelper = new InternalHelper(context);
-        listHelper = new DictListHelper(mContext);
-        infoHelper = new DictInfoHelper(mContext);
+        internalHelper = InternalHelper.getInstance(mContext);
+        listHelper = DictListHelper.getInstance(mContext);
+        infoHelper = DictInfoHelper.getInstance(mContext);
         rvAdapterDefinition = new RvAdapterDefinition();
         mDefList = new ArrayList<>(); // dictName and definition
 
@@ -105,9 +105,9 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
 
         SQLiteDatabase listReader = listHelper.getReadableDatabase();
         listReader.beginTransaction();
-        String sql = "select " + Consts.DB.COL_ENABLE
-                + " from " + Consts.DB.TABLE_LIST
-                + " where " + Consts.DB.COL_INTERNAL + " = ?";
+        String sql = "select " + DictListHelper.COL_ENABLE
+                + " from " + DictListHelper.TABLE_NAME
+                + " where " + DictListHelper.COL_INTERNAL + " = ?";
         try {
             SQLiteStatement stmt = listReader.compileStatement(sql);
             stmt.bindString(1, "1");
@@ -124,13 +124,13 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         if (isInternalEnabled) {
             boolean hasInternalDefinition = true;
             SQLiteDatabase internalReader = internalHelper.getReadableDatabase();
-            try (Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
-                    new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
-                    Consts.DB.COL_WORD + " = ?",
+            try (Cursor c = internalReader.query(InternalHelper.TABLE_NAME,
+                    new String[]{StarDictHelper.COL_OFFSET, StarDictHelper.COL_LENGTH},
+                    StarDictHelper.COL_WORD + " = ?",
                     new String[]{word}, null, null, null)) {
                 if (c.moveToFirst()) {
-                    offset = c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET));
-                    length = c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH));
+                    offset = c.getInt(c.getColumnIndex(StarDictHelper.COL_OFFSET));
+                    length = c.getInt(c.getColumnIndex(StarDictHelper.COL_LENGTH));
                     internalReader.close();
                 } else {
                     hasInternalDefinition = false;
@@ -138,7 +138,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
             }
 
             if (hasInternalDefinition) {
-                try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
+                try (InputStream is = am.open("databases" + File.separator + InternalHelper.FILE_NAME + ".dict")) {
                     //noinspection ResultOfMethodCallIgnored
                     is.skip(offset);
                     byte[] bytes = new byte[length];
@@ -149,7 +149,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                     String definition = new String(bytes, "utf-8");
                     Def def = new Def();
                     def.setInternal(true);
-                    def.setDictName(Consts.DB.INTERNAL_DICT_NAME);
+                    def.setDictName(InternalHelper.DICT_NAME);
                     def.setDef(definition.replaceAll("\n", "<br>"));
                     mDefList.add(def);
                 } catch (IOException e) {
@@ -163,13 +163,13 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
 
         // 从list中获取父目录(parentPath)和文件名(pureName)
         listReader = listHelper.getReadableDatabase();
-        try (Cursor cList = listReader.query(Consts.DB.TABLE_LIST,
-                new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME},
-                Consts.DB.COL_INTERNAL + " = ? and " + Consts.DB.COL_ENABLE + " = ?",
+        try (Cursor cList = listReader.query(DictListHelper.TABLE_NAME,
+                new String[]{DictListHelper.COL_PARENT_PATH, DictListHelper.COL_PURE_NAME},
+                DictListHelper.COL_INTERNAL + " = ? and " + DictListHelper.COL_ENABLE + " = ?",
                 new String[]{"0", "1"}, null, null, null)) {
             while (cList.moveToNext()) {
-                String parentPath = cList.getString(cList.getColumnIndex(Consts.DB.COL_PARENT_PATH));
-                String pureName = cList.getString(cList.getColumnIndex(Consts.DB.COL_PURE_NAME));
+                String parentPath = cList.getString(cList.getColumnIndex(DictListHelper.COL_PARENT_PATH));
+                String pureName = cList.getString(cList.getColumnIndex(DictListHelper.COL_PURE_NAME));
                 String dictId = "dict" + Math.abs(pureName.hashCode());
                 // 如果对应的dict文件存在
                 if (isFileExists(new File(parentPath), pureName + ".dict")) {
@@ -197,16 +197,16 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         NoteHelper noteHelper = NoteHelper.getInstance(mContext);
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
         noteReader.beginTransaction();
-        try (Cursor c = noteReader.query(Consts.DB.TABLE_NOTE,
-                new String[]{Consts.DB.COL_CONTENT},
-                Consts.DB.COL_TITLE + " = ?",
+        try (Cursor c = noteReader.query(NoteHelper.TABLE_NAME,
+                new String[]{NoteHelper.COL_CONTENT},
+                NoteHelper.COL_TITLE + " = ?",
                 new String[]{word},
                 null, null, null)) {
             if (c.moveToFirst()) {
-                String definition = c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT));
+                String definition = c.getString(c.getColumnIndex(NoteHelper.COL_CONTENT));
                 Def def = new Def();
                 def.setInternal(false);
-                def.setDictName(Consts.DB.CUSTOM_DICT_NAME);
+                def.setDictName(NoteHelper.CUSTOM_DICT_NAME);
                 def.setDef(definition.replaceAll("\n", "<br>"));
                 mDefList.add(def);
             }
@@ -233,12 +233,12 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         SQLiteDatabase dictReader = dictHelper.getReadableDatabase();
         // 如果有对应词条
         try (Cursor cDict = dictReader.query(dictId,
-                new String[]{Consts.DB.COL_OFFSET, Consts.DB.COL_LENGTH},
-                Consts.DB.COL_WORD + "= ?",
+                new String[]{StarDictHelper.COL_OFFSET, StarDictHelper.COL_LENGTH},
+                StarDictHelper.COL_WORD + "= ?",
                 new String[]{word}, null, null, null)) {
             if (cDict.moveToFirst()) {
-                offsetAndLength[0] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(Consts.DB.COL_OFFSET)));
-                offsetAndLength[1] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(Consts.DB.COL_LENGTH)));
+                offsetAndLength[0] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(StarDictHelper.COL_OFFSET)));
+                offsetAndLength[1] = Integer.parseInt(cDict.getString(cDict.getColumnIndex(StarDictHelper.COL_LENGTH)));
             } else {
                 if (DEBUG) Log.w(TAG, "UpdateDefinitionTask.getOffsetAndLength: 没有对应词条", null);
                 return null;
@@ -307,13 +307,13 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     private String[] getDictNameAndContentType(String dictId) {
         String[] dictNameAndContentType = new String[2];
         SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
-        try (Cursor c = infoReader.query(Consts.DB.TABLE_INFO,
-                new String[]{Consts.DB.COL_BOOK_NAME, Consts.DB.COL_CONTENT_TYPE},
-                Consts.DB.COL_DICT_ID + " = ? ",
+        try (Cursor c = infoReader.query(DictInfoHelper.TABLE_NAME,
+                new String[]{DictInfoHelper.COL_BOOK_NAME, DictInfoHelper.COL_CONTENT_TYPE},
+                DictInfoHelper.COL_DICT_ID + " = ? ",
                 new String[]{dictId}, null, null, null)) {
             if (c.moveToFirst()) {
-                dictNameAndContentType[0] = c.getString(c.getColumnIndex(Consts.DB.COL_BOOK_NAME));
-                dictNameAndContentType[1] = c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT_TYPE));
+                dictNameAndContentType[0] = c.getString(c.getColumnIndex(DictInfoHelper.COL_BOOK_NAME));
+                dictNameAndContentType[1] = c.getString(c.getColumnIndex(DictInfoHelper.COL_CONTENT_TYPE));
             }
         }
         infoReader.close();
@@ -339,7 +339,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
         private ReviewHelper reviewHelper;
 
         public RvAdapterDefinition() {
-            reviewHelper = new ReviewHelper(mContext);
+            reviewHelper = ReviewHelper.getInstance(mContext);
         }
 
         @Override
@@ -440,9 +440,9 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(mContext, NoteDetailActivity.class);
-                    intent.putExtra(Consts.DB.COL_TOBE_SAVE, true);
-                    intent.putExtra(Consts.DB.COL_TITLE, word);
-                    intent.putExtra(Consts.DB.COL_CONTENT, defStr);
+                    intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
+                    intent.putExtra(NoteHelper.COL_TITLE, word);
+                    intent.putExtra(NoteHelper.COL_CONTENT, defStr);
                     mContext.startActivity(intent);
                 }
             });

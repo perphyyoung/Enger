@@ -1,7 +1,6 @@
 package edu.perphy.enger.util;
 
 import android.os.Environment;
-import android.provider.BaseColumns;
 
 import java.io.File;
 
@@ -16,68 +15,6 @@ public class Consts {
             + File.separator + "Enger";
     public static final String PATH_DIC_STR = ROOT_PATH_STR + File.separator + "dic";
     public static final String PATH_NOTE_STR = ROOT_PATH_STR + File.separator + "note";
-
-    /**
-     * 数据库相关常数
-     */
-    public static class DB implements BaseColumns {
-        // internal
-        public static final String INTERNAL_DICT = "internalDict";
-        public static final String INTERNAL_ID = "dict1857041860";
-        public static final String INTERNAL_DICT_NAME = "牛津简明英汉袖珍辞典";
-        public static final int INTERNAL_DICT_COUNT = 142367;
-
-        // 词典的ifo信息 与ifo内的定义名称一致
-        public static final String TABLE_INFO = "info";
-        public static final String COL_DICT_ID = "id";
-        public static final String COL_BOOK_NAME = "bookname";
-        public static final String COL_WORD_COUNT = "wordcount";
-        public static final String COL_IDX_FILE_SIZE = "idxfilesize";
-        public static final String COL_AUTHOR = "author";
-        public static final String COL_EMAIL = "email";
-        public static final String COL_WEBSITE = "website";
-        public static final String COL_DESCRIPTION = "description";
-        public static final String COL_DATE = "date";
-        public static final String COL_CONTENT_TYPE = "sametypesequence";
-        public static final String COL_VERSION = "version";
-        public static final String COL_SYN_WORD_COUNT = "synwordcount";
-        public static final String COL_IDX_OFFSET_BITS = "idxoffsetbits";
-        public static final String COL_DICT_TYPE = "dicttype";
-
-        // list, 词典在app中的相关配置信息
-        public static final String TABLE_LIST = "list";
-        public static final String COL_INTERNAL = "internal";// 1:yes 0:no
-        public static final String COL_IDX_LOADED = "loaded";// 1:yes 0:no
-        public static final String COL_PARENT_PATH = "parentPath";
-        public static final String COL_DICT_DZ_TYPE = "type"; //todo dict or dict.dz
-        public static final String COL_PURE_NAME = "pureName";
-        public static final String COL_ENABLE = "enable";
-        public static final String COL_STAR = "star";
-
-        // idx
-        public static final String COL_WORD = "word";
-        public static final String COL_OFFSET = "offset";
-        public static final String COL_LENGTH = "length";
-
-        // note 笔记数据库
-        public static final String TABLE_NOTE = "note";
-        // col_id
-        public static final String COL_TITLE = "title";
-        public static final String COL_CONTENT = "content";
-        public static final String COL_CREATE_TIME = "createTime";
-        public static final String COL_MODIFY_TIME = "modifyTime";
-        // col_star
-        public static final String COL_TOBE_SAVE = "tobeSave";
-        public static final String CUSTOM_DICT_NAME = "Custom Dictionary";
-
-        // daily 每日一句数据库
-        public static final String TABLE_DAILY = "daily";
-        // col_date
-        // col_content
-        public static final String COL_NOTE = "note";
-        // col_star
-        public static final String COL_COMMENT = "comment";
-    }
 
     public static class Setting {
         // notice 与SettingsActivity必须一致

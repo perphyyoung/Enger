@@ -48,6 +48,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import edu.perphy.enger.db.DailyHelper;
+import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.LoadingDialogFragment;
 import edu.perphy.enger.util.CharUtils;
 import edu.perphy.enger.util.Consts;
@@ -127,10 +128,10 @@ public class DailyActivity extends AppCompatActivity {
                     dailyWriter.beginTransaction();
                     try {
                         ContentValues cv = new ContentValues(1);
-                        cv.put(Consts.DB.COL_STAR, starStatus == 0 ? "1" : "0");
-                        dailyWriter.update(Consts.DB.TABLE_DAILY,
+                        cv.put(DailyHelper.COL_STAR, starStatus == 0 ? "1" : "0");
+                        dailyWriter.update(DailyHelper.TABLE_NAME,
                                 cv,
-                                Consts.DB.COL_DATE + " = ?",
+                                DailyHelper.COL_DATE + " = ?",
                                 new String[]{date});
                         dailyWriter.setTransactionSuccessful();
                         new Toaster(mContext).showSingletonToast(starStatus == 0 ? "Star" : "Unstar");
@@ -145,12 +146,12 @@ public class DailyActivity extends AppCompatActivity {
                     SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
                     dailyWriter.beginTransaction();
                     ContentValues cv = new ContentValues(4);
-                    cv.put(Consts.DB.COL_DATE, date);
-                    cv.put(Consts.DB.COL_CONTENT, tvContent.getText().toString());
-                    cv.put(Consts.DB.COL_NOTE, tvNote.getText().toString());
-                    cv.put(Consts.DB.COL_STAR, "1");
+                    cv.put(DailyHelper.COL_DATE, date);
+                    cv.put(DailyHelper.COL_CONTENT, tvContent.getText().toString());
+                    cv.put(DailyHelper.COL_NOTE, tvNote.getText().toString());
+                    cv.put(DailyHelper.COL_STAR, "1");
                     try {
-                        dailyWriter.insertOrThrow(Consts.DB.TABLE_DAILY, null, cv);
+                        dailyWriter.insertOrThrow(DailyHelper.TABLE_NAME, null, cv);
                         new Toaster(mContext).showSingletonToast("Star");
                         dailyWriter.setTransactionSuccessful();
                     } catch (SQLException e) {
@@ -164,8 +165,8 @@ public class DailyActivity extends AppCompatActivity {
                     SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
                     dailyWriter.beginTransaction();
                     try {
-                        dailyWriter.delete(Consts.DB.TABLE_DAILY,
-                                Consts.DB.COL_DATE + " = ?",
+                        dailyWriter.delete(DailyHelper.TABLE_NAME,
+                                DailyHelper.COL_DATE + " = ?",
                                 new String[]{date});
                         new Toaster(mContext).showSingletonToast("Unstar");
                         dailyWriter.setTransactionSuccessful();
@@ -249,10 +250,10 @@ public class DailyActivity extends AppCompatActivity {
         if (jsonFile.exists()) {
             try {
                 JSONObject obj = new JSONObject(FileUtils.get5json(jsonFile));
-                mToolbar.setTitle((String) obj.get(Consts.DB.COL_DATE));
-                tvContent.setText((String) obj.get(Consts.DB.COL_CONTENT));
-                tvNote.setText((String) obj.get(Consts.DB.COL_NOTE));
-                tvComment.setText((String) obj.get(Consts.DB.COL_COMMENT));
+                mToolbar.setTitle((String) obj.get(DailyHelper.COL_DATE));
+                tvContent.setText((String) obj.get(DailyHelper.COL_CONTENT));
+                tvNote.setText((String) obj.get(DailyHelper.COL_NOTE));
+                tvComment.setText((String) obj.get(DailyHelper.COL_COMMENT));
             } catch (JSONException e) {
                 Log.e(TAG, "DailyActivity.loadLocalDaily: ", e);
                 e.printStackTrace();
@@ -314,9 +315,9 @@ public class DailyActivity extends AppCompatActivity {
         SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
         dailyReader.beginTransaction();
         try {
-            String sql = "select " + Consts.DB.COL_STAR
-                    + " from " + Consts.DB.TABLE_DAILY
-                    + " where " + Consts.DB.COL_DATE + " = ?";
+            String sql = "select " + DailyHelper.COL_STAR
+                    + " from " + DailyHelper.TABLE_NAME
+                    + " where " + DailyHelper.COL_DATE + " = ?";
             SQLiteStatement statement = dailyReader.compileStatement(sql);
             statement.bindString(1, dateline);
             // notice: throw exception if return 0 rows
@@ -379,9 +380,9 @@ public class DailyActivity extends AppCompatActivity {
         String tmpTitle = "day_" + dateline;
         String tmpContent = content + "\n" + note;
         Intent intent = new Intent(mContext, NoteDetailActivity.class);
-        intent.putExtra(Consts.DB.COL_TOBE_SAVE, true);
-        intent.putExtra(Consts.DB.COL_TITLE, tmpTitle);
-        intent.putExtra(Consts.DB.COL_CONTENT, tmpContent);
+        intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
+        intent.putExtra(NoteHelper.COL_TITLE, tmpTitle);
+        intent.putExtra(NoteHelper.COL_CONTENT, tmpContent);
         startActivity(intent);
     }
 
@@ -439,10 +440,10 @@ public class DailyActivity extends AppCompatActivity {
                         if (FileUtils.createDir(savePath)) {
                             try {
                                 JSONObject obj = new JSONObject();
-                                obj.put(Consts.DB.COL_DATE, dateline);
-                                obj.put(Consts.DB.COL_CONTENT, content);
-                                obj.put(Consts.DB.COL_NOTE, note);
-                                obj.put(Consts.DB.COL_COMMENT, translation);
+                                obj.put(DailyHelper.COL_DATE, dateline);
+                                obj.put(DailyHelper.COL_CONTENT, content);
+                                obj.put(DailyHelper.COL_NOTE, note);
+                                obj.put(DailyHelper.COL_COMMENT, translation);
                                 FileUtils.save2json(obj.toString(), savePath, dateline + ".json");
                             } catch (JSONException e) {
                                 Log.e(TAG, "DailySentenceTask.run: save json err", e);

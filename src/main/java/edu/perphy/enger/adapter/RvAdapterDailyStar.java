@@ -20,13 +20,12 @@ import edu.perphy.enger.NoteDetailActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
+import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.DailyStarFragment.OnDailyFragmentInteractionListener;
-import edu.perphy.enger.util.Consts;
 
 /**
  * {@link RecyclerView.Adapter} that can display a {@link Daily} and makes a call to the
  * specified {@link OnDailyFragmentInteractionListener}.
- * TODO: Replace the implementation with code for your data type.
  */
 public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.ViewHolder> {
     private final Context mContext;
@@ -42,16 +41,16 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
 
         SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
         dailyReader.beginTransaction();
-        try (Cursor c = dailyReader.query(Consts.DB.TABLE_DAILY, null,
-                Consts.DB.COL_STAR + " = ?",
+        try (Cursor c = dailyReader.query(DailyHelper.TABLE_NAME, null,
+                DailyHelper.COL_STAR + " = ?",
                 new String[]{1 + ""}, null, null,
-                Consts.DB.COL_DATE)) {
+                DailyHelper.COL_DATE)) {
             while (c.moveToNext()) {
                 Daily daily = new Daily();
-                daily.setDate(c.getString(c.getColumnIndex(Consts.DB.COL_DATE)));
-                daily.setContent(c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT)));
-                daily.setNote(c.getString(c.getColumnIndex(Consts.DB.COL_NOTE)));
-                daily.setStarred(TextUtils.equals(c.getString(c.getColumnIndex(Consts.DB.COL_STAR)), "1"));
+                daily.setDate(c.getString(c.getColumnIndex(DailyHelper.COL_DATE)));
+                daily.setContent(c.getString(c.getColumnIndex(DailyHelper.COL_CONTENT)));
+                daily.setNote(c.getString(c.getColumnIndex(DailyHelper.COL_NOTE)));
+                daily.setStarred(TextUtils.equals(c.getString(c.getColumnIndex(DailyHelper.COL_STAR)), "1"));
                 mDailyList.add(daily);
             }
             dailyReader.setTransactionSuccessful();
@@ -93,8 +92,8 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                                 SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
                                 dailyWriter.beginTransaction();
                                 try {
-                                    dailyWriter.delete(Consts.DB.TABLE_DAILY,
-                                            Consts.DB.COL_DATE + " = ?",
+                                    dailyWriter.delete(DailyHelper.TABLE_NAME,
+                                            DailyHelper.COL_DATE + " = ?",
                                             new String[]{daily.getDate()});
                                     dailyWriter.setTransactionSuccessful();
                                     int pos = holder.getAdapterPosition();
@@ -112,9 +111,9 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(mContext, NoteDetailActivity.class);
-                                intent.putExtra(Consts.DB.COL_TOBE_SAVE, true);
-                                intent.putExtra(Consts.DB.COL_TITLE, "day_" + daily.getDate());
-                                intent.putExtra(Consts.DB.COL_CONTENT,
+                                intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
+                                intent.putExtra(NoteHelper.COL_TITLE, "day_" + daily.getDate());
+                                intent.putExtra(NoteHelper.COL_CONTENT,
                                         daily.getContent() + "\n" + daily.getNote());
                                 mContext.startActivity(intent);
                             }

@@ -47,6 +47,7 @@ import java.util.Locale;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import edu.perphy.enger.adapter.WordAutoCompleteArrayAdapter;
+import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.db.OxfordHelper;
 import edu.perphy.enger.fragment.AboutDialogFragment;
 import edu.perphy.enger.thread.UpdateDefinitionTask;
@@ -227,8 +228,8 @@ public class MainActivity extends AppCompatActivity
                     }
                     // 单词详情界面
                     Intent intent = new Intent(MainActivity.this, NoteDetailActivity.class);
-                    intent.putExtra(Consts.DB.COL_TOBE_SAVE, true);
-                    intent.putExtra(Consts.DB.COL_TITLE, mactv.getText().toString().trim());
+                    intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
+                    intent.putExtra(NoteHelper.COL_TITLE, mactv.getText().toString().trim());
                     startActivity(intent);
                 }
             });
@@ -332,8 +333,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void initialWordList() {
         wordList = new ArrayList<>(OxfordHelper.WORD_COUNT);
-        OxfordHelper oxfordHelper = new OxfordHelper(mContext);
-        SQLiteDatabase oxfordReader = oxfordHelper.getReadableDatabase();
+        SQLiteDatabase oxfordReader = OxfordHelper.getInstance(mContext).getReadableDatabase();
         oxfordReader.beginTransaction();
         try (Cursor c = oxfordReader.query(OxfordHelper.TABLE_NAME,
                 new String[]{OxfordHelper.COL_WORD},

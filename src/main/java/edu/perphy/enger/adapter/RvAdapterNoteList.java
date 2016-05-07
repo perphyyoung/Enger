@@ -24,7 +24,6 @@ import java.util.HashMap;
 import edu.perphy.enger.NoteDetailActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.Toaster;
 
 /**
@@ -43,20 +42,20 @@ public class RvAdapterNoteList
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
         mNoteList = new ArrayList<>();
 
-        try (Cursor c = noteReader.query(Consts.DB.TABLE_NOTE,
+        try (Cursor c = noteReader.query(NoteHelper.TABLE_NAME,
                 null, null, null, null, null,
-                Consts.DB.COL_MODIFY_TIME)) {
+                NoteHelper.COL_MODIFY_TIME)) {
             while (c.moveToNext()) {
-                String title = c.getString(c.getColumnIndex(Consts.DB.COL_TITLE));
-                String content = c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT));
-                String modifyTime = c.getString(c.getColumnIndex(Consts.DB.COL_MODIFY_TIME));
-                String starred = c.getString(c.getColumnIndex(Consts.DB.COL_STAR));
+                String title = c.getString(c.getColumnIndex(NoteHelper.COL_TITLE));
+                String content = c.getString(c.getColumnIndex(NoteHelper.COL_CONTENT));
+                String modifyTime = c.getString(c.getColumnIndex(NoteHelper.COL_MODIFY_TIME));
+                String starred = c.getString(c.getColumnIndex(NoteHelper.COL_STAR));
 
                 HashMap<String, String> hm = new HashMap<>(4);
-                hm.put(Consts.DB.COL_TITLE, title);
-                hm.put(Consts.DB.COL_CONTENT, content);
-                hm.put(Consts.DB.COL_MODIFY_TIME, modifyTime);
-                hm.put(Consts.DB.COL_STAR, starred);
+                hm.put(NoteHelper.COL_TITLE, title);
+                hm.put(NoteHelper.COL_CONTENT, content);
+                hm.put(NoteHelper.COL_MODIFY_TIME, modifyTime);
+                hm.put(NoteHelper.COL_STAR, starred);
                 mNoteList.add(hm);
             }
         } catch (Exception e) {
@@ -75,10 +74,10 @@ public class RvAdapterNoteList
     @Override
     public void onBindViewHolder(final NoteListViewHolder holder, int position) {
         final HashMap<String, String> hm = mNoteList.get(position);
-        final String title = hm.get(Consts.DB.COL_TITLE);
-        final String content = hm.get(Consts.DB.COL_CONTENT);
-        final String modifyTime = hm.get(Consts.DB.COL_MODIFY_TIME);
-        boolean starred = TextUtils.equals(hm.get(Consts.DB.COL_STAR), "1");
+        final String title = hm.get(NoteHelper.COL_TITLE);
+        final String content = hm.get(NoteHelper.COL_CONTENT);
+        final String modifyTime = hm.get(NoteHelper.COL_MODIFY_TIME);
+        boolean starred = TextUtils.equals(hm.get(NoteHelper.COL_STAR), "1");
 
         holder.tvTitle.setText(title);
         holder.tvContent.setText(content);
@@ -91,8 +90,8 @@ public class RvAdapterNoteList
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, NoteDetailActivity.class);
 //                intent.putExtra(Consts.NOTE_READ_ONLY, true);
-                intent.putExtra(Consts.DB.COL_TITLE, title);
-                intent.putExtra(Consts.DB.COL_CONTENT, content);
+                intent.putExtra(NoteHelper.COL_TITLE, title);
+                intent.putExtra(NoteHelper.COL_CONTENT, content);
                 mContext.startActivity(intent);
             }
         });
@@ -103,20 +102,20 @@ public class RvAdapterNoteList
                 noteWriter.beginTransaction();
                 try {
                     // 查询当前是否已经 star
-                    String sql = "select " + Consts.DB.COL_STAR
-                            + " from " + Consts.DB.TABLE_NOTE
-                            + " where " + Consts.DB.COL_TITLE + " = ?";
+                    String sql = "select " + NoteHelper.COL_STAR
+                            + " from " + NoteHelper.TABLE_NAME
+                            + " where " + NoteHelper.COL_TITLE + " = ?";
                     SQLiteStatement statement = noteWriter.compileStatement(sql);
                     statement.bindString(1, title);
                     boolean isStarred = statement.simpleQueryForLong() > 0;
 
                     ContentValues cv = new ContentValues(1);
-                    cv.put(Consts.DB.COL_STAR, isStarred ? 0 : 1);
+                    cv.put(NoteHelper.COL_STAR, isStarred ? 0 : 1);
 
                     //notice change star to unstar, vice versa
-                    noteWriter.update(Consts.DB.TABLE_NOTE,
+                    noteWriter.update(NoteHelper.TABLE_NAME,
                             cv,
-                            Consts.DB.COL_TITLE + " = ?",
+                            NoteHelper.COL_TITLE + " = ?",
                             new String[]{holder.tvTitle.getText().toString()});
                     noteWriter.setTransactionSuccessful();
 
@@ -151,8 +150,8 @@ public class RvAdapterNoteList
                 SQLiteDatabase noteWriter = noteHelper.getWritableDatabase();
                 noteWriter.beginTransaction();
                 try {
-                    noteWriter.delete(Consts.DB.TABLE_NOTE,
-                            Consts.DB.COL_TITLE + " = ?",
+                    noteWriter.delete(NoteHelper.TABLE_NAME,
+                            NoteHelper.COL_TITLE + " = ?",
                             new String[]{title});
                     noteWriter.setTransactionSuccessful();
                     Snackbar.make(v, "Delete successfully.", Snackbar.LENGTH_INDEFINITE).show();

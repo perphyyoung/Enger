@@ -27,8 +27,8 @@ import edu.perphy.enger.db.StarDictHelper;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.FileUtils;
 
-import static edu.perphy.enger.util.Consts.TAG;
 import static edu.perphy.enger.util.Consts.DEBUG;
+import static edu.perphy.enger.util.Consts.TAG;
 
 /**
  * Created by perphy on 2016/2/28 0028.
@@ -46,8 +46,8 @@ public class ParseIdxCallable implements Callable<Integer> {
 
     public ParseIdxCallable(final Context context) {
         this.context = context;
-        listHelper = new DictListHelper(context);
-        infoHelper = new DictInfoHelper(context);
+        listHelper = DictListHelper.getInstance(context);
+        infoHelper = DictInfoHelper.getInstance(context);
         sb = new StringBuilder();
 
         HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_IDX);
@@ -59,15 +59,15 @@ public class ParseIdxCallable implements Callable<Integer> {
     public Integer call() throws Exception {
         // 从list中获取parentPath, pureName
         SQLiteDatabase listReader = listHelper.getReadableDatabase();
-        Cursor c = listReader.query(Consts.DB.TABLE_LIST,
-                new String[]{Consts.DB.COL_PARENT_PATH, Consts.DB.COL_PURE_NAME},
-                Consts.DB.COL_INTERNAL + " = ? and " + Consts.DB.COL_IDX_LOADED + " = ?", // 不是内置，也没有加载过
+        Cursor c = listReader.query(DictListHelper.TABLE_NAME,
+                new String[]{DictListHelper.COL_PARENT_PATH, DictListHelper.COL_PURE_NAME},
+                DictListHelper.COL_INTERNAL + " = ? and " + DictListHelper.COL_IDX_LOADED + " = ?", // 不是内置，也没有加载过
                 new String[]{0 + "", 0 + ""},
                 null, null, null, null);
 
         while (c.moveToNext()) {
-            String parentPath = c.getString(c.getColumnIndex(Consts.DB.COL_PARENT_PATH));
-            String pureName = c.getString(c.getColumnIndex(Consts.DB.COL_PURE_NAME));
+            String parentPath = c.getString(c.getColumnIndex(DictListHelper.COL_PARENT_PATH));
+            String pureName = c.getString(c.getColumnIndex(DictListHelper.COL_PURE_NAME));
 
             if (FileUtils.isFileExists(new File(parentPath), pureName + ".idx")) {
                 if (parseIdxFile(parentPath, pureName)) {
@@ -84,15 +84,15 @@ public class ParseIdxCallable implements Callable<Integer> {
         c.close();
         listReader.close();
 
-        if(!TextUtils.isEmpty(sb.toString())) {
+        if (!TextUtils.isEmpty(sb.toString())) {
             String[] dictIds = sb.toString().split(Consts.DICT_SEPARATOR);
             SQLiteDatabase listWriter = listHelper.getWritableDatabase();
             listWriter.beginTransaction();
-            for(String dictId : dictIds) {
-                if(!TextUtils.isEmpty(dictId)) {
-                    String sql = "update " + Consts.DB.TABLE_LIST +
-                            " set " + Consts.DB.COL_IDX_LOADED + " = 1" +
-                            " where " + Consts.DB.COL_DICT_ID + " = ?";
+            for (String dictId : dictIds) {
+                if (!TextUtils.isEmpty(dictId)) {
+                    String sql = "update " + DictListHelper.TABLE_NAME +
+                            " set " + DictListHelper.COL_IDX_LOADED + " = 1" +
+                            " where " + DictInfoHelper.COL_DICT_ID + " = ?";
                     SQLiteStatement statement = listWriter.compileStatement(sql);
                     statement.bindString(1, dictId);
                     statement.execute();
@@ -121,9 +121,9 @@ public class ParseIdxCallable implements Callable<Integer> {
 
         int wordSum;
         // 从info中获取单词的总数目
-        String sql4wordCountInIdx = "select " + Consts.DB.COL_WORD_COUNT
-                + " from " + Consts.DB.TABLE_INFO
-                + " where " + Consts.DB.COL_DICT_ID + " = ?";
+        String sql4wordCountInIdx = "select " + DictInfoHelper.COL_WORD_COUNT
+                + " from " + DictInfoHelper.TABLE_NAME
+                + " where " + DictInfoHelper.COL_DICT_ID + " = ?";
         SQLiteStatement statementToCount = infoReader.compileStatement(sql4wordCountInIdx);
         statementToCount.bindString(1, dictId);
         wordSum = (int) statementToCount.simpleQueryForLong();
@@ -175,7 +175,6 @@ public class ParseIdxCallable implements Callable<Integer> {
 
                 try {
                     byte[] buffer = new byte[4];
-                    // TODO: 2016/4/5 0005 just test
                     // notice 读取偏移量值
                     //noinspection ResultOfMethodCallIgnored
                     is.read(buffer, 0, 4);
@@ -196,24 +195,24 @@ public class ParseIdxCallable implements Callable<Integer> {
                 }
 
                 HashMap<String, String> m = new HashMap<>(3);
-                m.put(Consts.DB.COL_WORD, wordBuf);
-                m.put(Consts.DB.COL_OFFSET, offset + "");
-                m.put(Consts.DB.COL_LENGTH, length + "");
+                m.put(StarDictHelper.COL_WORD, wordBuf);
+                m.put(StarDictHelper.COL_OFFSET, offset + "");
+                m.put(StarDictHelper.COL_LENGTH, length + "");
                 al.add(m);
             }
             if (DEBUG) Log.i(TAG, "ParseIdxCallable.run: 实际读取到: " + wordCount);
 
             // 插入数据库
             String sql4insert = "insert into " + dictId
-                    + "(" + Consts.DB.COL_WORD + ", "
-                    + Consts.DB.COL_OFFSET + ", "
-                    + Consts.DB.COL_LENGTH + ") values(?,?,?)";
+                    + "(" + StarDictHelper.COL_WORD + ", "
+                    + StarDictHelper.COL_OFFSET + ", "
+                    + StarDictHelper.COL_LENGTH + ") values(?,?,?)";
             SQLiteStatement stat = dictWriter.compileStatement(sql4insert);
             dictWriter.beginTransaction();
             for (HashMap hm : al) {
-                stat.bindString(1, (String) hm.get(Consts.DB.COL_WORD));
-                stat.bindString(2, (String) hm.get(Consts.DB.COL_OFFSET));
-                stat.bindString(3, (String) hm.get(Consts.DB.COL_LENGTH));
+                stat.bindString(1, (String) hm.get(StarDictHelper.COL_WORD));
+                stat.bindString(2, (String) hm.get(StarDictHelper.COL_OFFSET));
+                stat.bindString(3, (String) hm.get(StarDictHelper.COL_LENGTH));
                 stat.executeInsert();
             }
             dictWriter.setTransactionSuccessful();

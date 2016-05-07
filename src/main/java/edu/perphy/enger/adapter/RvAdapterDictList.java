@@ -25,7 +25,6 @@ import edu.perphy.enger.R;
 import edu.perphy.enger.data.Dict;
 import edu.perphy.enger.db.DictInfoHelper;
 import edu.perphy.enger.db.DictListHelper;
-import edu.perphy.enger.util.Consts;
 
 import static edu.perphy.enger.util.Consts.TAG;
 
@@ -40,21 +39,21 @@ public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.Di
 
     public RvAdapterDictList(Context context) {
         mContext = context;
-        listHelper = new DictListHelper(mContext);
-        DictInfoHelper infoHelper = new DictInfoHelper(mContext);
+        listHelper = DictListHelper.getInstance(mContext);
+        DictInfoHelper infoHelper = DictInfoHelper.getInstance(mContext);
         mDictList = new ArrayList<>();
         SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
         infoReader.beginTransaction();
 
         // 从info中读取词典名
-        try (Cursor c = infoReader.query(Consts.DB.TABLE_INFO,
-                new String[]{Consts.DB.COL_DICT_ID, Consts.DB.COL_BOOK_NAME, Consts.DB.COL_WORD_COUNT},
+        try (Cursor c = infoReader.query(DictInfoHelper.TABLE_NAME,
+                new String[]{DictInfoHelper.COL_DICT_ID, DictInfoHelper.COL_BOOK_NAME, DictInfoHelper.COL_WORD_COUNT},
                 null, null, null, null, null)) {
             while (c.moveToNext()) {
                 Dict d = new Dict();
-                d.setDictId(c.getString(c.getColumnIndex(Consts.DB.COL_DICT_ID)));
-                d.setBookName(c.getString(c.getColumnIndex(Consts.DB.COL_BOOK_NAME)));
-                d.setWordCount(Integer.parseInt(c.getString(c.getColumnIndex(Consts.DB.COL_WORD_COUNT))));
+                d.setDictId(c.getString(c.getColumnIndex(DictInfoHelper.COL_DICT_ID)));
+                d.setBookName(c.getString(c.getColumnIndex(DictInfoHelper.COL_BOOK_NAME)));
+                d.setWordCount(Integer.parseInt(c.getString(c.getColumnIndex(DictInfoHelper.COL_WORD_COUNT))));
                 mDictList.add(d);
             }
             infoReader.setTransactionSuccessful();
@@ -98,10 +97,10 @@ public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.Di
                 listWriter.beginTransaction();
                 try {
                     ContentValues cv = new ContentValues(1);
-                    cv.put(Consts.DB.COL_ENABLE, isChecked ? "1" : "0");
-                    listWriter.update(Consts.DB.TABLE_LIST,
+                    cv.put(DictListHelper.COL_ENABLE, isChecked ? "1" : "0");
+                    listWriter.update(DictListHelper.TABLE_NAME,
                             cv,
-                            Consts.DB.COL_DICT_ID + " = ?",
+                            DictListHelper.COL_DICT_ID + " = ?",
                             new String[]{d.getDictId()});
                     listWriter.setTransactionSuccessful();
                     Toast.makeText(mContext, isChecked ? "Enable" : "Disable", Toast.LENGTH_SHORT).show();
@@ -119,9 +118,9 @@ public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.Di
     private boolean isChecked(String dictId) {
         SQLiteDatabase listReader = listHelper.getReadableDatabase();
         listReader.beginTransaction();
-        String sql = "select " + Consts.DB.COL_ENABLE
-                + " from " + Consts.DB.TABLE_LIST
-                + " where " + Consts.DB.COL_DICT_ID + " = ?";
+        String sql = "select " + DictListHelper.COL_ENABLE
+                + " from " + DictListHelper.TABLE_NAME
+                + " where " + DictListHelper.COL_DICT_ID + " = ?";
         try {
             SQLiteStatement stmt = listReader.compileStatement(sql);
             stmt.bindString(1, dictId);

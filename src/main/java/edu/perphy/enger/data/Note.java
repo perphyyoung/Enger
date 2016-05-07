@@ -5,7 +5,7 @@ import org.json.JSONObject;
 
 import java.io.Serializable;
 
-import edu.perphy.enger.util.Consts;
+import edu.perphy.enger.db.NoteHelper;
 
 /**
  * Created by perphy on 2016/4/7 0007.
@@ -19,11 +19,11 @@ public class Note implements Serializable{
     }
 
     public Note(JSONObject obj) throws JSONException {
-        this.title = (String) obj.get(Consts.DB.COL_TITLE);
-        this.content = (String) obj.get(Consts.DB.COL_CONTENT);
-        this.starred = (String) obj.get(Consts.DB.COL_STAR);
-        this.createTime = (String) obj.get(Consts.DB.COL_CREATE_TIME);
-        this.modifyTime = (String) obj.get(Consts.DB.COL_MODIFY_TIME);
+        this.title = (String) obj.get(NoteHelper.COL_TITLE);
+        this.content = (String) obj.get(NoteHelper.COL_CONTENT);
+        this.starred = (String) obj.get(NoteHelper.COL_STAR);
+        this.createTime = (String) obj.get(NoteHelper.COL_CREATE_TIME);
+        this.modifyTime = (String) obj.get(NoteHelper.COL_MODIFY_TIME);
     }
 
     public long getId() {

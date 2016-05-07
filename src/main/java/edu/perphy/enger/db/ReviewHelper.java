@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteOpenHelper;
  * 复习时的单词列表
  */
 public class ReviewHelper extends SQLiteOpenHelper {
+    public static ReviewHelper instance;
     public static final String TABLE_NAME = "review";
     public static final String COL_ID = "_id";
     public static final String COL_WORD = "word";
@@ -17,8 +18,12 @@ public class ReviewHelper extends SQLiteOpenHelper {
     public static final String COL_DATE_REVIEW = "dateReview";
     private static final int VERSION = 1;
 
-    public ReviewHelper(Context context) {
+    private ReviewHelper(Context context) {
         super(context, TABLE_NAME, null, VERSION);
+    }
+
+    public static ReviewHelper getInstance(Context context) {
+        return instance == null ? instance = new ReviewHelper(context) : instance;
     }
 
     @Override

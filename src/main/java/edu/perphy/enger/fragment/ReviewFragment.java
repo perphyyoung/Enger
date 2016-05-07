@@ -36,7 +36,7 @@ import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.InternalHelper;
 import edu.perphy.enger.db.OxfordHelper;
 import edu.perphy.enger.db.ReviewHelper;
-import edu.perphy.enger.util.Consts;
+import edu.perphy.enger.db.StarDictHelper;
 import edu.perphy.enger.util.RandomUtils;
 import edu.perphy.enger.util.TimeUtils;
 
@@ -91,7 +91,7 @@ public class ReviewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         am = getContext().getAssets();
-        reviewHelper = new ReviewHelper(getContext());
+        reviewHelper = ReviewHelper.getInstance(getContext());
         mWordList = new ArrayList<>(maxProgress);
 
         if (getArguments() != null) {
@@ -280,7 +280,7 @@ public class ReviewFragment extends Fragment {
             // get words
             String[] randomWords = new String[generateCount];
             int[] randomIds = RandomUtils.getUniqueRandoms(0, OxfordHelper.WORD_COUNT, generateCount);
-            SQLiteDatabase oxfordReader = new OxfordHelper(getContext()).getReadableDatabase();
+            SQLiteDatabase oxfordReader = OxfordHelper.getInstance(getContext()).getReadableDatabase();
             String sql = "select " + OxfordHelper.COL_WORD
                     + " from " + OxfordHelper.TABLE_NAME
                     + " where " + OxfordHelper.COL_ID + " = ?";
@@ -302,20 +302,20 @@ public class ReviewFragment extends Fragment {
 
             // get offset and length
             wordList = new ArrayList<>(generateCount);
-            SQLiteDatabase internalReader = new InternalHelper(getContext()).getReadableDatabase();
+            SQLiteDatabase internalReader = InternalHelper.getInstance(getContext()).getReadableDatabase();
             internalReader.beginTransaction();
             try {
                 for (int i = 0; i < generateCount; i++) {
                     Word w = new Word();
                     String word = randomWords[i];
                     w.setWord(word);
-                    Cursor c = internalReader.query(Consts.DB.INTERNAL_ID,
+                    Cursor c = internalReader.query(InternalHelper.TABLE_NAME,
                             null,
-                            Consts.DB.COL_WORD + " = ?",
+                            StarDictHelper.COL_WORD + " = ?",
                             new String[]{word}, null, null, null);
                     if (c.moveToFirst()) {
-                        w.setOffset(c.getInt(c.getColumnIndex(Consts.DB.COL_OFFSET)));
-                        w.setLength(c.getInt(c.getColumnIndex(Consts.DB.COL_LENGTH)));
+                        w.setOffset(c.getInt(c.getColumnIndex(StarDictHelper.COL_OFFSET)));
+                        w.setLength(c.getInt(c.getColumnIndex(StarDictHelper.COL_LENGTH)));
                         c.close();
                         wordList.add(w);
                     }
@@ -330,7 +330,7 @@ public class ReviewFragment extends Fragment {
             }
 
             // get def
-            try (InputStream is = am.open("databases" + File.separator + Consts.DB.INTERNAL_DICT + ".dict")) {
+            try (InputStream is = am.open("databases" + File.separator + InternalHelper.FILE_NAME + ".dict")) {
                 wordList.trimToSize(); // trim
 
                 for (Word w : wordList) {

@@ -20,7 +20,7 @@ import edu.perphy.enger.R;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.NoteStarFragment.OnNoteFragmentInteractionListener;
-import edu.perphy.enger.util.Consts;
+
 import static edu.perphy.enger.util.Consts.TAG;
 
 /**
@@ -39,14 +39,14 @@ public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.Vi
 
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
         noteReader.beginTransaction();
-        try (Cursor c = noteReader.query(Consts.DB.TABLE_NOTE, null,
-                Consts.DB.COL_STAR + " = ?", new String[]{1 + ""}, null, null, Consts.DB.COL_TITLE)) {
+        try (Cursor c = noteReader.query(NoteHelper.TABLE_NAME, null,
+                NoteHelper.COL_STAR + " = ?", new String[]{1 + ""}, null, null, NoteHelper.COL_TITLE)) {
             while (c.moveToNext()) {
                 Note note = new Note();
-                note.setTitle(c.getString(c.getColumnIndex(Consts.DB.COL_TITLE)));
-                note.setContent(c.getString(c.getColumnIndex(Consts.DB.COL_CONTENT)));
-                note.setStarred(c.getString(c.getColumnIndex(Consts.DB.COL_STAR)));
-                note.setModifyTime(c.getString(c.getColumnIndex(Consts.DB.COL_MODIFY_TIME)));
+                note.setTitle(c.getString(c.getColumnIndex(NoteHelper.COL_TITLE)));
+                note.setContent(c.getString(c.getColumnIndex(NoteHelper.COL_CONTENT)));
+                note.setStarred(c.getString(c.getColumnIndex(NoteHelper.COL_STAR)));
+                note.setModifyTime(c.getString(c.getColumnIndex(NoteHelper.COL_MODIFY_TIME)));
                 mNoteList.add(note);
             }
             noteReader.setTransactionSuccessful();
@@ -86,9 +86,9 @@ public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.Vi
                 SQLiteDatabase noteWriter = noteHelper.getWritableDatabase();
                 noteWriter.beginTransaction();
                 try {
-                    String sql = "update " + Consts.DB.TABLE_NOTE
-                            + " set " + Consts.DB.COL_STAR + " = 0 "
-                            + " where " + Consts.DB.COL_TITLE + " = ?";
+                    String sql = "update " + NoteHelper.TABLE_NAME
+                            + " set " + NoteHelper.COL_STAR + " = 0 "
+                            + " where " + NoteHelper.COL_TITLE + " = ?";
                     SQLiteStatement statement = noteWriter.compileStatement(sql);
                     statement.bindString(1, title);
                     statement.executeUpdateDelete();

@@ -108,12 +108,12 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
         try {
             for (Note n : mNoteList) {
                 ContentValues cv = new ContentValues();
-                cv.put(Consts.DB.COL_TITLE, n.getTitle());
-                cv.put(Consts.DB.COL_CONTENT, n.getContent());
-                cv.put(Consts.DB.COL_STAR, n.getStarred());
-                cv.put(Consts.DB.COL_CREATE_TIME, n.getCreateTime());
-                cv.put(Consts.DB.COL_MODIFY_TIME, n.getModifyTime());
-                noteWriter.insertWithOnConflict(Consts.DB.TABLE_NOTE,
+                cv.put(NoteHelper.COL_TITLE, n.getTitle());
+                cv.put(NoteHelper.COL_CONTENT, n.getContent());
+                cv.put(NoteHelper.COL_STAR, n.getStarred());
+                cv.put(NoteHelper.COL_CREATE_TIME, n.getCreateTime());
+                cv.put(NoteHelper.COL_MODIFY_TIME, n.getModifyTime());
+                noteWriter.insertWithOnConflict(NoteHelper.TABLE_NAME,
                         null,
                         cv,
                         SQLiteDatabase.CONFLICT_IGNORE); // ignore (not insert or change) if conflict occur

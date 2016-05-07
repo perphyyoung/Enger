@@ -4,17 +4,24 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import edu.perphy.enger.util.Consts;
-
 /**
  * Created by perphy on 2016/4/7 0007.
  * 笔记帮助类
  */
 public class NoteHelper extends SQLiteOpenHelper {
     private static NoteHelper instance;
+    public static final String TABLE_NAME = "note";
+    public static final String _ID = "_id";
+    public static final String COL_TITLE = "title";
+    public static final String COL_CONTENT = "content";
+    public static final String COL_STAR = "star";
+    public static final String COL_CREATE_TIME = "createTime";
+    public static final String COL_MODIFY_TIME = "modifyTime";
+    public static final String COL_TOBE_SAVE = "tobeSave";
+    public static final String CUSTOM_DICT_NAME = "Custom Dictionary";
 
     private NoteHelper(Context context) {
-        super(context, Consts.DB.TABLE_NOTE, null, 1);
+        super(context, TABLE_NAME, null, 1);
     }
 
     public static synchronized NoteHelper getInstance(Context context) {
@@ -23,18 +30,17 @@ public class NoteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String CREATE_DB = "create table if not exists " + Consts.DB.TABLE_NOTE + " ( "
-                + Consts.DB._ID + " integer primary key autoincrement, "
-                + Consts.DB.COL_TITLE + " text unique not null, "
-                + Consts.DB.COL_CONTENT + " text, "
-                + Consts.DB.COL_STAR + " boolean default 0, "
-                + Consts.DB.COL_CREATE_TIME + " text, "
-                + Consts.DB.COL_MODIFY_TIME + " text)";
+        final String CREATE_DB = "create table if not exists " + TABLE_NAME + " ( "
+                + _ID + " integer primary key autoincrement, "
+                + COL_TITLE + " text unique not null, "
+                + COL_CONTENT + " text, "
+                + COL_STAR + " boolean default 0, "
+                + COL_CREATE_TIME + " text, "
+                + COL_MODIFY_TIME + " text)";
         db.execSQL(CREATE_DB);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
     }
 }

@@ -29,7 +29,7 @@ public class ParseIfoPathCallable implements Callable<Integer> {
     private int successfulInsertCount = 0;
 
     public ParseIfoPathCallable(Context context) {
-        listHelper = new DictListHelper(context);
+        listHelper = DictListHelper.getInstance(context);
     }
 
     @Override
@@ -105,7 +105,7 @@ public class ParseIfoPathCallable implements Callable<Integer> {
         }
 
         // 检查是否已插入此词典信息到list
-        String sql = "select count(*) from " + Consts.DB.TABLE_LIST + " where " + Consts.DB.COL_DICT_ID + " = ?";
+        String sql = "select count(*) from " + DictListHelper.TABLE_NAME + " where " + DictListHelper.COL_DICT_ID + " = ?";
         SQLiteStatement statement = listWriter.compileStatement(sql);
         statement.bindString(1, dictId);
         int result = (int) statement.simpleQueryForLong();
@@ -115,13 +115,13 @@ public class ParseIfoPathCallable implements Callable<Integer> {
         } else {
             successfulFindCount++;
             ContentValues cv = new ContentValues(5);
-            cv.put(Consts.DB.COL_DICT_ID, dictId);
-            cv.put(Consts.DB.COL_IDX_LOADED, 0);
-            cv.put(Consts.DB.COL_PARENT_PATH, parentPath.getAbsolutePath());
-            cv.put(Consts.DB.COL_DICT_DZ_TYPE, "dict");
-            cv.put(Consts.DB.COL_PURE_NAME, pureName);
+            cv.put(DictListHelper.COL_DICT_ID, dictId);
+            cv.put(DictListHelper.COL_IDX_LOADED, 0);
+            cv.put(DictListHelper.COL_PARENT_PATH, parentPath.getAbsolutePath());
+            cv.put(DictListHelper.COL_DICT_DZ_TYPE, "dict");
+            cv.put(DictListHelper.COL_PURE_NAME, pureName);
 
-            boolean success = -1 != listWriter.insertOrThrow(Consts.DB.TABLE_LIST, null, cv);
+            boolean success = -1 != listWriter.insertOrThrow(DictListHelper.TABLE_NAME, null, cv);
             cv.clear();
             listWriter.close();
             if (!success) {

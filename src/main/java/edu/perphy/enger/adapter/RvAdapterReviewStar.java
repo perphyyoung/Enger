@@ -29,7 +29,7 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
 
     public RvAdapterReviewStar(Context context, OnWordFragmentInteractionListener listener) {
         mListener = listener;
-        reviewHelper = new ReviewHelper(context);
+        reviewHelper = ReviewHelper.getInstance(context);
         mReviewList = new ArrayList<>();
 
         SQLiteDatabase reviewReader = reviewHelper.getReadableDatabase();

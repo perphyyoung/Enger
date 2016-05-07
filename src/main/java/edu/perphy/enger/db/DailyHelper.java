@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import edu.perphy.enger.R;
-import edu.perphy.enger.util.Consts;
 
 import static edu.perphy.enger.util.Consts.TAG;
 
@@ -17,11 +16,18 @@ import static edu.perphy.enger.util.Consts.TAG;
  * 每日一句帮助类
  */
 public class DailyHelper extends SQLiteOpenHelper {
-    private static DailyHelper instance;
     private Context mContext;
+    private static DailyHelper instance;
+    public static final String TABLE_NAME = "daily";
+    public static final String _ID = "_id";
+    public static final String COL_DATE = "date";
+    public static final String COL_CONTENT = "content";
+    public static final String COL_NOTE = "note";
+    public static final String COL_STAR = "star";
+    public static final String COL_COMMENT = "comment";
 
     private DailyHelper(Context context) {
-        super(context, Consts.DB.TABLE_DAILY, null, 1);
+        super(context, TABLE_NAME, null, 1);
         mContext = context;
     }
 
@@ -31,34 +37,32 @@ public class DailyHelper extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
-        final String CREATE_DB = "create table if not exists " + Consts.DB.TABLE_DAILY + "("
-                + Consts.DB._ID + " integer primary key autoincrement, "
-                + Consts.DB.COL_DATE + " text unique not null, "
-                + Consts.DB.COL_CONTENT + " text, "
-                + Consts.DB.COL_NOTE + " text, "
-                + Consts.DB.COL_STAR + " boolean default 0)";
+        final String CREATE_DB = "create table if not exists " + TABLE_NAME + "("
+                + _ID + " integer primary key autoincrement, "
+                + COL_DATE + " text unique not null, "
+                + COL_CONTENT + " text, "
+                + COL_NOTE + " text, "
+                + COL_STAR + " boolean default 0)";
         db.execSQL(CREATE_DB);
 
         // insert snapshot
         ContentValues cv = new ContentValues();
-        cv.put(Consts.DB.COL_DATE, mContext.getString(R.string.daily_date));
-        cv.put(Consts.DB.COL_CONTENT, mContext.getString(R.string.daily_content));
-        cv.put(Consts.DB.COL_NOTE, mContext.getString(R.string.daily_note));
+        cv.put(COL_DATE, mContext.getString(R.string.daily_date));
+        cv.put(COL_CONTENT, mContext.getString(R.string.daily_content));
+        cv.put(COL_NOTE, mContext.getString(R.string.daily_note));
         db.beginTransaction();
         try {
-            db.insertOrThrow(Consts.DB.TABLE_DAILY, null, cv);
+            db.insertOrThrow(TABLE_NAME, null, cv);
             db.setTransactionSuccessful();
         } catch (SQLException e) {
             Log.e(TAG, "DailyHelper.onCreate: err", e);
             e.printStackTrace();
         } finally {
             db.endTransaction();
-            db.close();
         }
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
     }
 }
