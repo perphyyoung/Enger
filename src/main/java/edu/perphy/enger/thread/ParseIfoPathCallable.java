@@ -22,7 +22,6 @@ import static edu.perphy.enger.util.Consts.TAG;
  */
 public class ParseIfoPathCallable implements Callable<Integer> {
     private static final int MAX_RECURSIVE_LAYER = 5;
-    private Context mContext;
     private DictListHelper listHelper;
 
     private int layer = 0;
@@ -30,7 +29,6 @@ public class ParseIfoPathCallable implements Callable<Integer> {
     private int successfulInsertCount = 0;
 
     public ParseIfoPathCallable(Context context) {
-        this.mContext = context;
         listHelper = new DictListHelper(context);
     }
 

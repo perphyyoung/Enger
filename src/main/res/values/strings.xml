@@ -61,7 +61,6 @@
 
     <!--star activity start-->
     <string name="title_activity_star">Star</string>
-    <string name="section_format">Hello World from section: %1$d</string>
     <!--star activity end-->
 
     <!--note activity start-->

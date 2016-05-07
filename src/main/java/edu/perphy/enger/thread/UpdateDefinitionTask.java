@@ -146,7 +146,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
                     is.skip(offset);
                     byte[] bytes = new byte[length];
                     if (is.read(bytes) == -1) {
-                        if (DEBUG) Log.i(TAG, "ParseDictCallable.call: Arrive at the end of file!");
+                        if (DEBUG) Log.i(TAG, "UpdateDefinitionTask.doInBackground: Arrive at the end of file!");
                     }
                     String definition = new String(bytes, "utf-8");
                     Def def = new Def();
