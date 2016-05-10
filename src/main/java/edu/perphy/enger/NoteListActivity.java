@@ -22,7 +22,7 @@ import edu.perphy.enger.thread.ImportNoteTask;
 
 public class NoteListActivity extends AppCompatActivity {
     private Context mContext;
-    private SwipeMenuRecyclerView rvNoteList;
+    public SwipeMenuRecyclerView rvNoteList;
     RvAdapterNoteList adapterNoteList;
 
     @Override

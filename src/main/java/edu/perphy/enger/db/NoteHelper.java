@@ -1,8 +1,15 @@
 package edu.perphy.enger.db;
 
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.text.TextUtils;
+import android.util.Log;
+
+import java.util.ArrayList;
+
+import static edu.perphy.enger.util.Consts.TAG;
 
 /**
  * Created by perphy on 2016/4/7 0007.
@@ -42,5 +49,22 @@ public class NoteHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+    }
+
+    public static void delete(Context context, ArrayList<Integer> toRemoveList) {
+        SQLiteDatabase noteWriter = getInstance(context).getWritableDatabase();
+        noteWriter.beginTransaction();
+        try {
+            String sql = "delete from " + TABLE_NAME
+                    + " where " + _ID + " in (" + TextUtils.join(",", toRemoveList) + ")";
+            noteWriter.execSQL(sql);
+            noteWriter.setTransactionSuccessful();
+        } catch (SQLException e) {
+            Log.e(TAG, "NoteHelper.delete: ", e);
+            e.printStackTrace();
+        } finally {
+            noteWriter.endTransaction();
+            noteWriter.close();
+        }
     }
 }

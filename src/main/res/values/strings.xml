@@ -72,6 +72,7 @@
     <string name="action_discard">Discard</string>
     <string name="action_export">Export Note</string>
     <string name="action_import">Import Note</string>
+    <string name="action_delete">Delete</string>
     <!--note activity end-->
 
     <!--settings activity start-->
