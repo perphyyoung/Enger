@@ -79,6 +79,9 @@ public class NoteListActivity extends AppCompatActivity {
             case R.id.action_export:
                 new ExportNoteTask(mContext).execute();
                 return true;
+            case R.id.action_stars:
+                startActivity(new Intent(mContext, StarActivity.class));
+                return true;
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;

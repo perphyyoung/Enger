@@ -9,14 +9,18 @@
         android:orderInCategory="1"
         android:title="@string/action_refresh"
         app:showAsAction="ifRoom"/>
-
     <item
         android:id="@+id/action_add"
         android:icon="@drawable/ic_add_white_48dp"
         android:orderInCategory="10"
         android:title="@string/add_note"
         app:showAsAction="ifRoom"/>
-
+    <item
+        android:id="@+id/action_stars"
+        android:icon="@drawable/ic_star_white_24dp"
+        android:orderInCategory="17"
+        android:title="@string/my_stars"
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"

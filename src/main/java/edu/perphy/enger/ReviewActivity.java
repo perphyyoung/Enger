@@ -97,6 +97,9 @@ public class ReviewActivity extends AppCompatActivity
                             }).setNegativeButton("Cancel", null).show();
                 }
                 return true;
+            case R.id.action_stars:
+                startActivity(new Intent(mContext, StarActivity.class));
+                return true;
             case R.id.action_settings:
                 startActivity(new Intent(mContext, SettingsActivity.class));
                 return true;
