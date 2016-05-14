@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Enger</string>
 
     <!--main activity start-->
@@ -37,16 +37,18 @@
     <string name="action_daily_sentence">Daily Sentence</string>
     <string name="action_clear_history">Clear History</string>
     <string name="daily_date">2016–03–29</string>
-    <string name="daily_content">A soldier would rather face a firing squad a thousand times
+    <string name="daily_english">A soldier would rather face a firing squad a thousand times
         over than just once have to look his own colleagues in the eye
         knowing he had failed them.</string>
-    <string name="daily_note">一名军人宁愿被行刑队枪毙一千次，也不愿让战友看见自己逃命的背影。</string>
+    <string name="daily_chinese">一名军人宁愿被行刑队枪毙一千次，也不愿让战友看见自己逃命的背影。</string>
+    <string name="daily_tts" tools:ignore="TypographyDashes">http://news.iciba.com/admin/tts/2016-03-29-day.mp3</string>
     <string name="daily_comment">词霸小编：不知道大家有没有去看蝙蝠侠大战超人呢？小编可以在周四的晚上就卯足了劲去看了首映，
         看完之后觉得没有惊喜也没有太多失望，前面叙事有些混乱，整个片子太严肃和深沉了。
         前90分钟各种铺垫和线索，如果你没看过超人前传和蝙蝠侠之前的几部，看这个还是有些稍微吃力的。
         从第90分钟开始就好了很多，各种打斗和预料中的大决战就开始了（前后包括两场决战），最后还有神奇女侠正装出现哦~总体来说3星到4星吧~</string>
     <string name="title_activity_daily">DailyActivity</string>
     <string name="wifi_only">Wifi Only</string>
+    <string name="network_not_available">Network is not available.</string>
     <string name="add_note">Add to Notes</string>
     <string name="action_refresh">Refresh</string>
     <!--daily activity end-->

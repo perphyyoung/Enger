@@ -48,8 +48,8 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
             while (c.moveToNext()) {
                 Daily daily = new Daily();
                 daily.setDate(c.getString(c.getColumnIndex(DailyHelper.COL_DATE)));
-                daily.setContent(c.getString(c.getColumnIndex(DailyHelper.COL_CONTENT)));
-                daily.setNote(c.getString(c.getColumnIndex(DailyHelper.COL_NOTE)));
+                daily.setEnglish(c.getString(c.getColumnIndex(DailyHelper.COL_ENGLISH)));
+                daily.setChinese(c.getString(c.getColumnIndex(DailyHelper.COL_CHINESE)));
                 daily.setStarred(TextUtils.equals(c.getString(c.getColumnIndex(DailyHelper.COL_STAR)), "1"));
                 mDailyList.add(daily);
             }
@@ -74,8 +74,8 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
         final Daily daily = mDailyList.get(position);
         holder.mItem = daily;
         holder.tvDate.setText(daily.getDate());
-        holder.tvContent.setText(daily.getContent());
-        holder.tvNote.setText(daily.getNote());
+        holder.tvEnglish.setText(daily.getEnglish());
+        holder.tvChinese.setText(daily.getChinese());
         holder.ibStar.setImageResource(R.drawable.ic_star_black_24dp);
 
         holder.ibStar.setOnClickListener(new View.OnClickListener() {
@@ -114,7 +114,7 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                                 intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
                                 intent.putExtra(NoteHelper.COL_TITLE, "day_" + daily.getDate());
                                 intent.putExtra(NoteHelper.COL_CONTENT,
-                                        daily.getContent() + "\n" + daily.getNote());
+                                        daily.getEnglish() + "\n" + daily.getChinese());
                                 mContext.startActivity(intent);
                             }
                         }).show();
@@ -138,7 +138,7 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         public final View mView;
-        public final TextView tvDate, tvContent, tvNote;
+        public final TextView tvDate, tvEnglish, tvChinese;
         private final ImageButton ibStar;
         public Daily mItem;
 
@@ -146,8 +146,8 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
             super(view);
             mView = view;
             tvDate = (TextView) view.findViewById(R.id.tvDate);
-            tvContent = (TextView) view.findViewById(R.id.tvContent);
-            tvNote = (TextView) view.findViewById(R.id.tvNote);
+            tvEnglish = (TextView) view.findViewById(R.id.tvEnglish);
+            tvChinese = (TextView) view.findViewById(R.id.tvChinese);
             ibStar = (ImageButton) view.findViewById(R.id.ibStar);
         }
     }

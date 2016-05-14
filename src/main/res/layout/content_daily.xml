@@ -34,18 +34,18 @@
                 android:src="@drawable/placeholder"/>
 
             <TextView
-                android:id="@+id/tvContent"
+                android:id="@+id/tvEnglish"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/activity_vertical_margin"
-                android:text="@string/daily_content"/>
+                android:text="@string/daily_english"/>
 
             <TextView
-                android:id="@+id/tvNote"
+                android:id="@+id/tvChinese"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingTop="@dimen/activity_vertical_margin"
-                android:text="@string/daily_note"/>
+                android:text="@string/daily_chinese"/>
 
             <LinearLayout
                 android:layout_width="match_parent"

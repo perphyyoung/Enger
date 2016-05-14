@@ -36,7 +36,6 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,6 +46,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
 import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.LoadingDialogFragment;
@@ -73,10 +73,9 @@ public class DailyActivity extends AppCompatActivity {
     private final String TODAY_DIR = Consts.PATH_NOTE_STR + File.separator + TODAY;
     private boolean hasNewContent = false;
     private int screenWidth;
-    private String sid, tts, content, note, love, translation, picture, picture2,
-            caption, dateline, s_pv, sp_pv, tags, fenxiang_img;
+    private Daily daily;
     private ImageView ivPicture, ibStar, ibShare, ibSound;
-    private TextView tvContent, tvNote, tvComment;
+    private TextView tvEnglish, tvChinese, tvComment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,16 +94,17 @@ public class DailyActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        dateline = getString(R.string.daily_date);
-        content = getString(R.string.daily_content);
-        note = getString(R.string.daily_note);
+        daily = new Daily();
+        daily.setDate(getString(R.string.daily_date));
+        daily.setEnglish(getString(R.string.daily_english));
+        daily.setChinese(getString(R.string.daily_chinese));
 
         ivPicture = (ImageView) findViewById(R.id.ivPicture);
         ibStar = (ImageView) findViewById(R.id.ibStar);
         ibShare = (ImageView) findViewById(R.id.ibShare);
         ibSound = (ImageView) findViewById(R.id.ibSound);
-        tvContent = (TextView) findViewById(R.id.tvContent);
-        tvNote = (TextView) findViewById(R.id.tvNote);
+        tvEnglish = (TextView) findViewById(R.id.tvEnglish);
+        tvChinese = (TextView) findViewById(R.id.tvChinese);
         tvComment = (TextView) findViewById(R.id.tvComment);
 
         // 获取宽度
@@ -116,10 +116,12 @@ public class DailyActivity extends AppCompatActivity {
         ibStar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int starStatus = getStarStatus();
+                int starStatus = getStarStatus(mToolbar.getTitle().toString());
                 if (-1 != starStatus) {
                     setStarImageResource(starStatus == 0); //notice: reverse star status
-                } else {return;}
+                } else {
+                    return;
+                }
 
                 final String date = mToolbar.getTitle().toString();
                 if (!hasNewContent) { // 旧内容
@@ -147,8 +149,8 @@ public class DailyActivity extends AppCompatActivity {
                     dailyWriter.beginTransaction();
                     ContentValues cv = new ContentValues(4);
                     cv.put(DailyHelper.COL_DATE, date);
-                    cv.put(DailyHelper.COL_CONTENT, tvContent.getText().toString());
-                    cv.put(DailyHelper.COL_NOTE, tvNote.getText().toString());
+                    cv.put(DailyHelper.COL_ENGLISH, tvEnglish.getText().toString());
+                    cv.put(DailyHelper.COL_CHINESE, tvChinese.getText().toString());
                     cv.put(DailyHelper.COL_STAR, "1");
                     try {
                         dailyWriter.insertOrThrow(DailyHelper.TABLE_NAME, null, cv);
@@ -190,7 +192,10 @@ public class DailyActivity extends AppCompatActivity {
         ibSound.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (tts == null) return;
+                if (!NetworkUtils.isNetworkEnabled(mContext)) {
+                    Toast.makeText(mContext, getString(R.string.network_not_available), Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
                 Toast.makeText(mContext, "The sound will play when prepared.", Toast.LENGTH_SHORT).show();
                 if (player == null) {
@@ -198,7 +203,7 @@ public class DailyActivity extends AppCompatActivity {
                 }
                 try {
                     if (!player.isPlaying()) {
-                        player.setDataSource(tts);
+                        player.setDataSource(daily.getTts());
                         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                             @Override
                             public void onPrepared(MediaPlayer mp) {
@@ -225,7 +230,7 @@ public class DailyActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        mToolbar.setTitle(dateline);
+        mToolbar.setTitle(daily.getDate());
         wifiOnly = settings.getBoolean(Consts.Setting.CBP_WIFI_ONLY, true);
         if (new File(TODAY_DIR).exists()) {
             hasNewContent = true;
@@ -250,10 +255,13 @@ public class DailyActivity extends AppCompatActivity {
         if (jsonFile.exists()) {
             try {
                 JSONObject obj = new JSONObject(FileUtils.get5json(jsonFile));
-                mToolbar.setTitle((String) obj.get(DailyHelper.COL_DATE));
-                tvContent.setText((String) obj.get(DailyHelper.COL_CONTENT));
-                tvNote.setText((String) obj.get(DailyHelper.COL_NOTE));
-                tvComment.setText((String) obj.get(DailyHelper.COL_COMMENT));
+                String date = obj.getString(DailyHelper.COL_DATE);
+                mToolbar.setTitle(date);
+                tvEnglish.setText(obj.getString(DailyHelper.COL_ENGLISH));
+                tvChinese.setText(obj.getString(DailyHelper.COL_CHINESE));
+                tvComment.setText(obj.getString(DailyHelper.COL_COMMENT));
+                setStarStatus(date);
+                daily.setTts(obj.getString(DailyHelper.COL_TTS));
             } catch (JSONException e) {
                 Log.e(TAG, "DailyActivity.loadLocalDaily: ", e);
                 e.printStackTrace();
@@ -262,7 +270,10 @@ public class DailyActivity extends AppCompatActivity {
     }
 
     private void refreshLayout() {
-        if (TextUtils.equals(mToolbar.getTitle(), TimeUtils.getSimpleDate()))
+        String date = mToolbar.getTitle().toString();
+        setStarStatus(date);
+
+        if (TextUtils.equals(date, TimeUtils.getSimpleDate()))
             return; // title为日期，与今天相同说明已加载最新内容
 
         // 判断网络连接情况
@@ -270,13 +281,9 @@ public class DailyActivity extends AppCompatActivity {
             new DailySentenceTask().execute();
             return;
         }
-        int starStatus = getStarStatus();
-        if (-1 != starStatus) {
-            setStarImageResource(starStatus == 1);
-        }
         if (NetworkUtils.isMobileEnabled(mContext)) {
             if (wifiOnly) {
-                Snackbar.make(tvContent, "WIFI ONLY is enabled.", Snackbar.LENGTH_INDEFINITE)
+                Snackbar.make(tvEnglish, "WIFI ONLY is enabled.", Snackbar.LENGTH_INDEFINITE)
                         .setAction(getString(R.string.action_settings), new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {// 跳转到设置界面
@@ -296,7 +303,7 @@ public class DailyActivity extends AppCompatActivity {
             }
         } else {
             Toast.makeText(mContext, "You are seeing a snapshot of 2016-03-29", Toast.LENGTH_LONG).show();
-            Snackbar.make(tvContent, "Network is not available.", Snackbar.LENGTH_INDEFINITE)
+            Snackbar.make(tvEnglish, getString(R.string.network_not_available), Snackbar.LENGTH_INDEFINITE)
                     .setAction(getString(R.string.action_settings), new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {// 跳转到手机的网络设置界面
@@ -306,12 +313,19 @@ public class DailyActivity extends AppCompatActivity {
         }
     }
 
+    private void setStarStatus(String date) {
+        int starStatus = getStarStatus(date);
+        if (-1 != starStatus) {
+            setStarImageResource(starStatus == 1);
+        }
+    }
+
     /**
      * 获取star状态
      *
      * @return 1:star 0:unstar -1:error
      */
-    private int getStarStatus() {
+    private int getStarStatus(String date) {
         SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
         dailyReader.beginTransaction();
         try {
@@ -319,7 +333,7 @@ public class DailyActivity extends AppCompatActivity {
                     + " from " + DailyHelper.TABLE_NAME
                     + " where " + DailyHelper.COL_DATE + " = ?";
             SQLiteStatement statement = dailyReader.compileStatement(sql);
-            statement.bindString(1, dateline);
+            statement.bindString(1, date);
             // notice: throw exception if return 0 rows
             int starStatus = Integer.parseInt(statement.simpleQueryForString());
             dailyReader.setTransactionSuccessful();
@@ -337,7 +351,8 @@ public class DailyActivity extends AppCompatActivity {
     }
 
     private void setStarImageResource(boolean starred) {
-        ibStar.setImageResource(starred ? R.drawable.ic_star_black_24dp
+        ibStar.setImageResource(starred
+                ? R.drawable.ic_star_black_24dp
                 : R.drawable.ic_star_border_black_24dp);
     }
 
@@ -377,8 +392,8 @@ public class DailyActivity extends AppCompatActivity {
     }
 
     private void saveSentence2note() {
-        String tmpTitle = "day_" + dateline;
-        String tmpContent = content + "\n" + note;
+        String tmpTitle = "day_" + mToolbar.getTitle().toString();
+        String tmpContent = tvEnglish.getText().toString() + "\n" + tvChinese.getText().toString();
         Intent intent = new Intent(mContext, NoteDetailActivity.class);
         intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
         intent.putExtra(NoteHelper.COL_TITLE, tmpTitle);
@@ -391,8 +406,6 @@ public class DailyActivity extends AppCompatActivity {
         private static final int ERR_NETWORK = 2;
         private static final int ERR_JSON = 3;
         LoadingDialogFragment loadingDialogFragment;
-        String jsonStr = "";
-        JSONObject json = null;
 
         @Override
         protected void onPreExecute() {
@@ -409,42 +422,38 @@ public class DailyActivity extends AppCompatActivity {
                 httpURLConnection.setConnectTimeout(CONNECTION_TIMEOUT);
                 httpURLConnection.setReadTimeout(READ_TIMEOUT);
                 InputStream is = httpURLConnection.getInputStream();
-                jsonStr = FileUtils.get5json(is);
 
-                json = new JSONObject(jsonStr);
-                sid = json.getString("sid");//每日一句ID
-                tts = json.getString("tts");//音频地址
-                content = json.getString("content");//英文内容
-                note = json.getString("note"); // 中文内容
-                love = json.getString("love");//喜欢个数
-                translation = json.getString("translation");//词霸小编
-                picture = json.getString("picture");//图片地址
-                picture2 = json.getString("picture2");//大图片地址
-                caption = json.getString("caption");//标题
-                dateline = CharUtils.hyphen2en_dash(json.getString("dateline"));//时间
-                s_pv = json.getString("s_pv");//浏览数
-                sp_pv = json.getString("sp_pv");//语音评测浏览数
-                JSONArray array = json.getJSONArray("tags");//相关标签
-                tags = "";
-                for (int i = 0; i < array.length(); i++) {
-                    JSONObject tag = (JSONObject) array.get(i);
-                    tags += tag.getString("name") + ",";
-                }
-                fenxiang_img = json.getString("fenxiang_img");//分享图片
+                JSONObject json = new JSONObject(FileUtils.get5json(is));
+                daily.setSid(json.getString("sid"));
+                daily.setTts(json.getString("tts"));
+                daily.setEnglish(json.getString("content"));
+                daily.setChinese(json.getString("note"));
+                daily.setLove(json.getString("love"));
+                daily.setComment(json.getString("translation"));
+                daily.setPicture(json.getString("picture"));
+                daily.setPicture2(json.getString("picture2"));
+                daily.setCaption(json.getString("caption"));
+                daily.setDate(CharUtils.hyphen2en_dash(json.getString("dateline")));
+                daily.setS_pv(json.getString("s_pv"));
+                daily.setSp_pv(json.getString("sp_pv"));
+                daily.setTags(json.getJSONArray("tags"));
+                daily.setShare(json.getString("fenxiang_img"));
 
                 // 下载必要文本到本机
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String savePath = Consts.PATH_NOTE_STR + File.separator + dateline;
+                        String date = daily.getDate();
+                        String savePath = Consts.PATH_NOTE_STR + File.separator + date;
                         if (FileUtils.createDir(savePath)) {
                             try {
                                 JSONObject obj = new JSONObject();
-                                obj.put(DailyHelper.COL_DATE, dateline);
-                                obj.put(DailyHelper.COL_CONTENT, content);
-                                obj.put(DailyHelper.COL_NOTE, note);
-                                obj.put(DailyHelper.COL_COMMENT, translation);
-                                FileUtils.save2json(obj.toString(), savePath, dateline + ".json");
+                                obj.put(DailyHelper.COL_DATE, date);
+                                obj.put(DailyHelper.COL_ENGLISH, daily.getEnglish());
+                                obj.put(DailyHelper.COL_CHINESE, daily.getChinese());
+                                obj.put(DailyHelper.COL_TTS, daily.getTts());
+                                obj.put(DailyHelper.COL_COMMENT, daily.getComment());
+                                FileUtils.save2json(obj.toString(), savePath, date + ".json");
                             } catch (JSONException e) {
                                 Log.e(TAG, "DailySentenceTask.run: save json err", e);
                                 e.printStackTrace();
@@ -487,21 +496,22 @@ public class DailyActivity extends AppCompatActivity {
                     break;
             }
 
-            tvComment.setText(translation);
+            tvComment.setText(daily.getComment());
             ibStar.setImageResource(R.drawable.ic_star_border_black_24dp);
 
-            mToolbar.setTitle(dateline);
-            tvContent.setText(content);
-            tvNote.setText(note);
-            if (picture != null) {
+            mToolbar.setTitle(daily.getDate());
+            tvEnglish.setText(daily.getEnglish());
+            tvChinese.setText(daily.getChinese());
+            String pictureStr = daily.getPicture();
+            if (pictureStr != null) {
                 loadingDialogFragment.dismiss();
                 Picasso.with(mContext)
-                        .load(picture)
+                        .load(pictureStr)
                         .transform(normalFormation)
                         .into(ivPicture);
                 // 保存图片
                 Picasso.with(mContext)
-                        .load(picture)
+                        .load(pictureStr)
                         .transform(normalFormation)
                         .into(target);
             }
@@ -517,9 +527,10 @@ public class DailyActivity extends AppCompatActivity {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String savePath = Consts.PATH_NOTE_STR + File.separator + dateline;
+                    String date = daily.getDate();
+                    String savePath = Consts.PATH_NOTE_STR + File.separator + date;
                     if (FileUtils.createDir(savePath)) {
-                        try (FileOutputStream fos = new FileOutputStream(new File(savePath, dateline + ".jpg"))) {
+                        try (FileOutputStream fos = new FileOutputStream(new File(savePath, date + ".jpg"))) {
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
                             fos.flush();
                         } catch (IOException e) {
@@ -538,7 +549,6 @@ public class DailyActivity extends AppCompatActivity {
 
         @Override
         public void onPrepareLoad(Drawable placeHolderDrawable) {
-
         }
     };
 

@@ -37,16 +37,16 @@
         </RelativeLayout>
 
         <TextView
-            android:id="@+id/tvContent"
+            android:id="@+id/tvEnglish"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="Content"/>
+            tools:text="English"/>
 
         <TextView
-            android:id="@+id/tvNote"
+            android:id="@+id/tvChinese"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            tools:text="Note"/>
+            tools:text="Chinese"/>
 
     </LinearLayout>
 </android.support.v7.widget.CardView>

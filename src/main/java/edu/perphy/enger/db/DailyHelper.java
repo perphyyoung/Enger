@@ -21,10 +21,12 @@ public class DailyHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME = "daily";
     public static final String _ID = "_id";
     public static final String COL_DATE = "date";
-    public static final String COL_CONTENT = "content";
-    public static final String COL_NOTE = "note";
+    public static final String COL_ENGLISH = "english";
+    public static final String COL_CHINESE = "chinese";
     public static final String COL_STAR = "star";
     public static final String COL_COMMENT = "comment";
+
+    public static final String COL_TTS = "tts";
 
     private DailyHelper(Context context) {
         super(context, TABLE_NAME, null, 1);
@@ -40,16 +42,16 @@ public class DailyHelper extends SQLiteOpenHelper {
         final String CREATE_DB = "create table if not exists " + TABLE_NAME + "("
                 + _ID + " integer primary key autoincrement, "
                 + COL_DATE + " text unique not null, "
-                + COL_CONTENT + " text, "
-                + COL_NOTE + " text, "
+                + COL_ENGLISH + " text, "
+                + COL_CHINESE + " text, "
                 + COL_STAR + " boolean default 0)";
         db.execSQL(CREATE_DB);
 
         // insert snapshot
         ContentValues cv = new ContentValues();
         cv.put(COL_DATE, mContext.getString(R.string.daily_date));
-        cv.put(COL_CONTENT, mContext.getString(R.string.daily_content));
-        cv.put(COL_NOTE, mContext.getString(R.string.daily_note));
+        cv.put(COL_ENGLISH, mContext.getString(R.string.daily_english));
+        cv.put(COL_CHINESE, mContext.getString(R.string.daily_chinese));
         db.beginTransaction();
         try {
             db.insertOrThrow(TABLE_NAME, null, cv);

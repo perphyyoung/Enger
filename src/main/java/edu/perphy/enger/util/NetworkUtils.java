@@ -29,4 +29,11 @@ public class NetworkUtils {
         NetworkInfo networkInfo = cm.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI;
     }
+
+    /**
+     * 检查网络是否已连接
+     */
+    public static boolean isNetworkEnabled(Context context) {
+        return isMobileEnabled(context) || isWifiEnabled(context);
+    }
 }
