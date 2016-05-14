@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
 
 import com.tubb.smrv.SwipeMenuRecyclerView;
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
@@ -22,8 +23,8 @@ import edu.perphy.enger.thread.ImportNoteTask;
 
 public class NoteListActivity extends AppCompatActivity {
     private Context mContext;
+    public TextView emptyList;
     public SwipeMenuRecyclerView rvNoteList;
-    RvAdapterNoteList adapterNoteList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,13 +47,13 @@ public class NoteListActivity extends AppCompatActivity {
                 }
             });
 
+        emptyList = (TextView) findViewById(R.id.emptyList);
         rvNoteList = (SwipeMenuRecyclerView) findViewById(R.id.rvNoteList);
         rvNoteList.addItemDecoration(new HorizontalDividerItemDecoration
                 .Builder(mContext).showLastDivider().build());
         rvNoteList.setHasFixedSize(true);
         rvNoteList.setLayoutManager(new LinearLayoutManager(mContext));
-        adapterNoteList = new RvAdapterNoteList(mContext);
-        rvNoteList.setAdapter(adapterNoteList);
+        rvNoteList.setAdapter(new RvAdapterNoteList(mContext));
     }
 
     @Override
@@ -93,8 +94,7 @@ public class NoteListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        adapterNoteList = new RvAdapterNoteList(mContext);
-        rvNoteList.setAdapter(adapterNoteList);
+        rvNoteList.setAdapter(new RvAdapterNoteList(mContext));
     }
 
     @Override

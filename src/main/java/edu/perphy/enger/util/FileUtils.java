@@ -14,8 +14,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
-import static edu.perphy.enger.util.Consts.TAG;
 import static edu.perphy.enger.util.Consts.DEBUG;
+import static edu.perphy.enger.util.Consts.TAG;
 
 /**
  * Created by perphy on 2016/2/18 0018.
@@ -137,18 +137,30 @@ public class FileUtils {
     }
 
     /**
-     * 文件过滤器，返回true如果是ido文件或者是目录
+     * 文件过滤器<br>
+     * postfix: 后缀<br>
+     * shallow: 是否浅层（1层）搜索
      */
     public static class PostfixFileFilter implements FileFilter {
         private String postfix;
+        private boolean shallow;
 
         public PostfixFileFilter(String postfix) {
+            this(postfix, false);
+        }
+
+        public PostfixFileFilter(String postfix, boolean shallow) {
             this.postfix = postfix;
+            this.shallow = shallow;
         }
 
         @Override
         public boolean accept(File pathname) {
-            return pathname.isDirectory() || pathname.getName().endsWith(postfix);
+            if (shallow) {
+                return pathname.getName().endsWith(postfix);
+            } else {
+                return pathname.isDirectory() || pathname.getName().endsWith(postfix);
+            }
         }
     }
 }

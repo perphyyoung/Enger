@@ -9,7 +9,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.view.ActionMode;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 
 import edu.perphy.enger.NoteDetailActivity;
+import edu.perphy.enger.NoteListActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
@@ -42,7 +42,7 @@ import static edu.perphy.enger.util.Consts.TAG;
  */
 public class RvAdapterNoteList
         extends RecyclerView.Adapter<RvAdapterNoteList.NoteListViewHolder> {
-    private Context mContext;
+    private NoteListActivity act;
     private NoteHelper noteHelper;
     final private ArrayList<Note> mNoteList;
     private ActionMode mActionMode;
@@ -50,8 +50,8 @@ public class RvAdapterNoteList
     private HashSet<Integer> selectedSet;
 
     public RvAdapterNoteList(Context context) {
-        this.mContext = context;
-        noteHelper = NoteHelper.getInstance(mContext);
+        this.act = (NoteListActivity) context;
+        noteHelper = NoteHelper.getInstance(act);
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
         mNoteList = new ArrayList<>();
 
@@ -77,8 +77,20 @@ public class RvAdapterNoteList
             noteReader.close();
         }
 
+        updateView();
+
         selectedSet = new HashSet<>();
         setupActionModeCallback();
+    }
+
+    private void updateView() {
+        if (mNoteList.isEmpty()) {
+            act.rvNoteList.setVisibility(View.GONE);
+            act.emptyList.setVisibility(View.VISIBLE);
+        } else {
+            act.rvNoteList.setVisibility(View.VISIBLE);
+            act.emptyList.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -108,10 +120,10 @@ public class RvAdapterNoteList
             @Override
             public void onClick(View v) {
                 if (mActionMode == null) {
-                    Intent intent = new Intent(mContext, NoteDetailActivity.class);
+                    Intent intent = new Intent(act, NoteDetailActivity.class);
                     intent.putExtra(NoteHelper.COL_TITLE, title);
                     intent.putExtra(NoteHelper.COL_CONTENT, content);
-                    mContext.startActivity(intent);
+                    act.startActivity(intent);
                 } else {
                     addOrRemove(holder.getAdapterPosition());
                 }
@@ -138,7 +150,7 @@ public class RvAdapterNoteList
             @Override
             public boolean onLongClick(View v) {
                 if (mActionMode == null) {
-                    mActionMode = ((AppCompatActivity) mContext).startSupportActionMode(mCallback);
+                    mActionMode = act.startSupportActionMode(mCallback);
                     itemView.setBackgroundResource(R.drawable.bg_selected);
                     selectedSet.add(holder.getAdapterPosition());
                 }
@@ -174,9 +186,9 @@ public class RvAdapterNoteList
                     ((ImageButton) v).setImageResource(currentStar
                             ? R.drawable.ic_star_black_24dp
                             : R.drawable.ic_star_border_black_24dp);
-                    new Toaster(mContext).showSingletonToast(currentStar ? "Star" : "Unstar");
+                    new Toaster(act).showSingletonToast(currentStar ? "Star" : "Unstar");
                 } catch (Exception e) {
-                    Toast.makeText(mContext, "Failed to star or unstar", Toast.LENGTH_LONG).show();
+                    Toast.makeText(act, "Failed to star or unstar", Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 } finally {
                     noteWriter.endTransaction();
@@ -188,7 +200,7 @@ public class RvAdapterNoteList
             @Override
             public void onClick(View v) {
                 // TODO: 2016/4/7 0007  笔记信息
-                Toast.makeText(mContext, "笔记信息", Toast.LENGTH_SHORT).show();
+                Toast.makeText(act, "笔记信息", Toast.LENGTH_SHORT).show();
             }
         });
         holder.ibDelete.setOnClickListener(new View.OnClickListener() {
@@ -196,6 +208,7 @@ public class RvAdapterNoteList
             public void onClick(View v) {
                 mNoteList.remove(holder.getAdapterPosition());
                 notifyItemRemoved(holder.getAdapterPosition());
+                updateView();
 
                 SQLiteDatabase noteWriter = noteHelper.getWritableDatabase();
                 noteWriter.beginTransaction();
@@ -206,7 +219,7 @@ public class RvAdapterNoteList
                     noteWriter.setTransactionSuccessful();
                     Snackbar.make(v, "Delete successfully.", Snackbar.LENGTH_INDEFINITE).show();
                 } catch (Exception e) {
-                    Toast.makeText(mContext, "delete err", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(act, "delete err", Toast.LENGTH_SHORT).show();
                     e.printStackTrace();
                 } finally {
                     noteWriter.endTransaction();
@@ -239,7 +252,7 @@ public class RvAdapterNoteList
             public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.action_delete:
-                        new AlertDialog.Builder(mContext)
+                        new AlertDialog.Builder(act)
                                 .setTitle("Delete Notes")
                                 .setMessage("Are your sure to delete " + selectedSet.size() + " note(s)." +
                                         " This action cannot be revert.")
@@ -276,7 +289,8 @@ public class RvAdapterNoteList
             toRemoveIdList.add((int) n.getId());
             mNoteList.remove(n);
         }
-        NoteHelper.delete(mContext, toRemoveIdList);
+        updateView();
+        NoteHelper.delete(act, toRemoveIdList);
     }
 
     @Override

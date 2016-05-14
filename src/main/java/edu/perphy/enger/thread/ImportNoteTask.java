@@ -57,7 +57,7 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
         File rootNotePath = new File(Consts.PATH_NOTE_STR);
         // 创建笔记的根目录
         if (FileUtils.createDir(rootNotePath)) {
-            File[] jsonFiles = rootNotePath.listFiles(new FileUtils.PostfixFileFilter("json"));
+            File[] jsonFiles = rootNotePath.listFiles(new FileUtils.PostfixFileFilter("json", true));
             if (jsonFiles.length == 0) {
                 return EMPTY;
             } else {
