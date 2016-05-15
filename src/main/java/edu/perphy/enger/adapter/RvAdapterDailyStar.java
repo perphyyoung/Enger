@@ -1,5 +1,6 @@
 package edu.perphy.enger.adapter;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -21,6 +22,7 @@ import edu.perphy.enger.R;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
 import edu.perphy.enger.db.NoteHelper;
+import edu.perphy.enger.fragment.DailyStarFragment;
 import edu.perphy.enger.fragment.DailyStarFragment.OnDailyFragmentInteractionListener;
 
 /**
@@ -28,13 +30,15 @@ import edu.perphy.enger.fragment.DailyStarFragment.OnDailyFragmentInteractionLis
  * specified {@link OnDailyFragmentInteractionListener}.
  */
 public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.ViewHolder> {
+    private DailyStarFragment fragment;
     private final Context mContext;
     private final OnDailyFragmentInteractionListener mListener;
     private final ArrayList<Daily> mDailyList;
     private final DailyHelper dailyHelper;
 
-    public RvAdapterDailyStar(Context context, OnDailyFragmentInteractionListener listener) {
-        mContext = context;
+    public RvAdapterDailyStar(DailyStarFragment fragment, OnDailyFragmentInteractionListener listener) {
+        this.fragment = fragment;
+        mContext = fragment.getContext();
         mListener = listener;
         mDailyList = new ArrayList<>();
         dailyHelper = DailyHelper.getInstance(mContext);
@@ -60,6 +64,17 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
             dailyReader.endTransaction();
             dailyReader.close();
         }
+        updateView();
+    }
+
+    private void updateView() {
+        if (mDailyList.isEmpty()) {
+            fragment.rvDailyList.setVisibility(View.GONE);
+            fragment.emptyList.setVisibility(View.VISIBLE);
+        } else {
+            fragment.rvDailyList.setVisibility(View.VISIBLE);
+            fragment.emptyList.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -72,8 +87,9 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
     @Override
     public void onBindViewHolder(final ViewHolder holder, int position) {
         final Daily daily = mDailyList.get(position);
+        final String date = daily.getDate();
         holder.mItem = daily;
-        holder.tvDate.setText(daily.getDate());
+        holder.tvDate.setText(date);
         holder.tvEnglish.setText(daily.getEnglish());
         holder.tvChinese.setText(daily.getChinese());
         holder.ibStar.setImageResource(R.drawable.ic_star_black_24dp);
@@ -92,13 +108,23 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                                 SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
                                 dailyWriter.beginTransaction();
                                 try {
-                                    dailyWriter.delete(DailyHelper.TABLE_NAME,
-                                            DailyHelper.COL_DATE + " = ?",
-                                            new String[]{daily.getDate()});
+                                    if (TextUtils.equals(date, mContext.getResources().getString(R.string.daily_date))) {
+                                        ContentValues cv = new ContentValues();
+                                        cv.put(DailyHelper.COL_STAR, "0"); // unstar
+                                        dailyWriter.update(DailyHelper.TABLE_NAME,
+                                                cv,
+                                                DailyHelper.COL_DATE + " = ?",
+                                                new String[]{date});
+                                    } else {
+                                        dailyWriter.delete(DailyHelper.TABLE_NAME,
+                                                DailyHelper.COL_DATE + " = ?",
+                                                new String[]{date});
+                                    }
                                     dailyWriter.setTransactionSuccessful();
                                     int pos = holder.getAdapterPosition();
                                     mDailyList.remove(pos);
                                     notifyItemRemoved(pos);
+                                    updateView();
                                 } catch (Exception e) {
                                     e.printStackTrace();
                                 } finally {
@@ -112,7 +138,7 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                             public void onClick(DialogInterface dialog, int which) {
                                 Intent intent = new Intent(mContext, NoteDetailActivity.class);
                                 intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
-                                intent.putExtra(NoteHelper.COL_TITLE, "day_" + daily.getDate());
+                                intent.putExtra(NoteHelper.COL_TITLE, "day_" + date);
                                 intent.putExtra(NoteHelper.COL_CONTENT,
                                         daily.getEnglish() + "\n" + daily.getChinese());
                                 mContext.startActivity(intent);

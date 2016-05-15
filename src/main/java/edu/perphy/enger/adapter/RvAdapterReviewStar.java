@@ -1,6 +1,5 @@
 package edu.perphy.enger.adapter;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
@@ -18,18 +17,21 @@ import java.util.List;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.ReviewHelper;
+import edu.perphy.enger.fragment.ReviewStarFragment;
 import edu.perphy.enger.fragment.ReviewStarFragment.OnWordFragmentInteractionListener;
 
 import static edu.perphy.enger.util.Consts.TAG;
 
 public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewStar.ViewHolder> {
+    private ReviewStarFragment fragment;
     private final List<Word> mReviewList;
     private final ReviewHelper reviewHelper;
     private final OnWordFragmentInteractionListener mListener;
 
-    public RvAdapterReviewStar(Context context, OnWordFragmentInteractionListener listener) {
+    public RvAdapterReviewStar(ReviewStarFragment fragment, OnWordFragmentInteractionListener listener) {
+        this.fragment = fragment;
         mListener = listener;
-        reviewHelper = ReviewHelper.getInstance(context);
+        reviewHelper = ReviewHelper.getInstance(fragment.getContext());
         mReviewList = new ArrayList<>();
 
         SQLiteDatabase reviewReader = reviewHelper.getReadableDatabase();
@@ -49,6 +51,17 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
         } finally {
             reviewReader.endTransaction();
             reviewReader.close();
+        }
+        updateView();
+    }
+
+    private void updateView() {
+        if (mReviewList.isEmpty()) {
+            fragment.rvReviewList.setVisibility(View.GONE);
+            fragment.emptyList.setVisibility(View.VISIBLE);
+        } else {
+            fragment.rvReviewList.setVisibility(View.VISIBLE);
+            fragment.emptyList.setVisibility(View.GONE);
         }
     }
 

@@ -1,6 +1,5 @@
 package edu.perphy.enger.adapter;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -19,6 +18,7 @@ import java.util.ArrayList;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
+import edu.perphy.enger.fragment.NoteStarFragment;
 import edu.perphy.enger.fragment.NoteStarFragment.OnNoteFragmentInteractionListener;
 
 import static edu.perphy.enger.util.Consts.TAG;
@@ -28,13 +28,15 @@ import static edu.perphy.enger.util.Consts.TAG;
  * specified {@link OnNoteFragmentInteractionListener}.
  */
 public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.ViewHolder> {
+    private NoteStarFragment fragment;
     private final OnNoteFragmentInteractionListener mListener;
     private final NoteHelper noteHelper;
     private final ArrayList<Note> mNoteList;
 
-    public RvAdapterNoteStar(Context context, OnNoteFragmentInteractionListener listener) {
+    public RvAdapterNoteStar(NoteStarFragment fragment, OnNoteFragmentInteractionListener listener) {
+        this.fragment = fragment;
         mListener = listener;
-        noteHelper = NoteHelper.getInstance(context);
+        noteHelper = NoteHelper.getInstance(fragment.getContext());
         mNoteList = new ArrayList<>();
 
         SQLiteDatabase noteReader = noteHelper.getReadableDatabase();
@@ -56,6 +58,17 @@ public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.Vi
         } finally {
             noteReader.endTransaction();
             noteReader.close();
+        }
+        updateView();
+    }
+
+    private void updateView() {
+        if (mNoteList.isEmpty()) {
+            fragment.rvNoteList.setVisibility(View.GONE);
+            fragment.emptyList.setVisibility(View.VISIBLE);
+        } else {
+            fragment.rvNoteList.setVisibility(View.VISIBLE);
+            fragment.emptyList.setVisibility(View.GONE);
         }
     }
 
@@ -82,6 +95,7 @@ public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.Vi
                 int pos = holder.getAdapterPosition();
                 mNoteList.remove(pos);
                 notifyItemRemoved(pos);
+                updateView();
 
                 SQLiteDatabase noteWriter = noteHelper.getWritableDatabase();
                 noteWriter.beginTransaction();

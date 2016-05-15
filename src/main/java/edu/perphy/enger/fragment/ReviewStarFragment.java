@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.yqritc.recyclerviewflexibledivider.HorizontalDividerItemDecoration;
 
@@ -18,7 +19,7 @@ import edu.perphy.enger.data.Word;
 
 /**
  * A fragment representing a list of Items.
- * <p>
+ * <p/>
  * Activities containing this fragment MUST implement the {@link OnWordFragmentInteractionListener}
  * interface.
  */
@@ -26,6 +27,8 @@ public class ReviewStarFragment extends Fragment {
     private static final String ARG_COLUMN_COUNT = "column-count";
     private int mColumnCount = 1;
     private OnWordFragmentInteractionListener mListener;
+    public RecyclerView rvReviewList;
+    public TextView emptyList;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -56,20 +59,18 @@ public class ReviewStarFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_word_list, container, false);
 
-        // Set the adapter
-        if (view instanceof RecyclerView) {
-            Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
-            if (mColumnCount <= 1) {
-                recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            } else {
-                recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
-            }
-            recyclerView.addItemDecoration(new HorizontalDividerItemDecoration
-                    .Builder(context).showLastDivider().build());
-            recyclerView.setHasFixedSize(true);
-            recyclerView.setAdapter(new RvAdapterReviewStar(context, mListener));
+        Context context = view.getContext();
+        rvReviewList = (RecyclerView) view.findViewById(R.id.rvReviewList);
+        emptyList = (TextView) view.findViewById(R.id.emptyList);
+        if (mColumnCount <= 1) {
+            rvReviewList.setLayoutManager(new LinearLayoutManager(context));
+        } else {
+            rvReviewList.setLayoutManager(new GridLayoutManager(context, mColumnCount));
         }
+        rvReviewList.addItemDecoration(new HorizontalDividerItemDecoration
+                .Builder(context).showLastDivider().build());
+        rvReviewList.setHasFixedSize(true);
+        rvReviewList.setAdapter(new RvAdapterReviewStar(this, mListener));
         return view;
     }
 
@@ -91,16 +92,6 @@ public class ReviewStarFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnWordFragmentInteractionListener {
         void onWordFragmentInteraction(Word item);
     }
