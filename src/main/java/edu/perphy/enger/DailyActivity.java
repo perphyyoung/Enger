@@ -5,10 +5,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDoneException;
-import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -36,7 +35,6 @@ import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.squareup.picasso.Transformation;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -69,8 +67,6 @@ public class DailyActivity extends AppCompatActivity {
     private MediaPlayer player;
     private Toolbar mToolbar;
     private boolean wifiOnly;
-    private final String TODAY = TimeUtils.getSimpleDate();
-    private final String TODAY_DIR = Consts.PATH_NOTE_STR + File.separator + TODAY;
     private boolean hasNewContent = false;
     private int screenWidth;
     private Daily daily;
@@ -94,11 +90,6 @@ public class DailyActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
 
-        daily = new Daily();
-        daily.setDate(getString(R.string.daily_date));
-        daily.setEnglish(getString(R.string.daily_english));
-        daily.setChinese(getString(R.string.daily_chinese));
-
         ivPicture = (ImageView) findViewById(R.id.ivPicture);
         ibStar = (ImageView) findViewById(R.id.ibStar);
         ibShare = (ImageView) findViewById(R.id.ibShare);
@@ -116,76 +107,33 @@ public class DailyActivity extends AppCompatActivity {
         ibStar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int starStatus = getStarStatus(mToolbar.getTitle().toString());
-                if (-1 != starStatus) {
-                    setStarImageResource(starStatus == 0); //notice: reverse star status
-                } else {
-                    return;
-                }
+                boolean starStatus = daily.isStarred();
+                setStarImageResource(!starStatus); //notice: reverse star status
 
-                final String date = mToolbar.getTitle().toString();
-                if (!hasNewContent) { // 旧内容
-                    //notice: reverse star status in database
-                    SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
-                    dailyWriter.beginTransaction();
-                    try {
-                        ContentValues cv = new ContentValues(1);
-                        cv.put(DailyHelper.COL_STAR, starStatus == 0 ? "1" : "0");
-                        dailyWriter.update(DailyHelper.TABLE_NAME,
-                                cv,
-                                DailyHelper.COL_DATE + " = ?",
-                                new String[]{date});
-                        dailyWriter.setTransactionSuccessful();
-                        new Toaster(mContext).showSingletonToast(starStatus == 0 ? "Star" : "Unstar");
-                    } catch (SQLException e) {
-                        Log.e(TAG, "DailyActivity.onClick: ", e);
-                        e.printStackTrace();
-                    } finally {
-                        dailyWriter.endTransaction();
-                        dailyWriter.close();
-                    }
-                } else if (starStatus == 0) {// make new star, aka insert
-                    SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
-                    dailyWriter.beginTransaction();
-                    ContentValues cv = new ContentValues(4);
-                    cv.put(DailyHelper.COL_DATE, date);
-                    cv.put(DailyHelper.COL_ENGLISH, tvEnglish.getText().toString());
-                    cv.put(DailyHelper.COL_CHINESE, tvChinese.getText().toString());
-                    cv.put(DailyHelper.COL_STAR, "1");
-                    try {
-                        dailyWriter.insertOrThrow(DailyHelper.TABLE_NAME, null, cv);
-                        new Toaster(mContext).showSingletonToast("Star");
-                        dailyWriter.setTransactionSuccessful();
-                    } catch (SQLException e) {
-                        Log.e(TAG, "DailyActivity.onClick: ", e);
-                        e.printStackTrace();
-                    } finally {
-                        dailyWriter.endTransaction();
-                        dailyWriter.close();
-                    }
-                } else { // make new unstar, aka delete
-                    SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
-                    dailyWriter.beginTransaction();
-                    try {
-                        dailyWriter.delete(DailyHelper.TABLE_NAME,
-                                DailyHelper.COL_DATE + " = ?",
-                                new String[]{date});
-                        new Toaster(mContext).showSingletonToast("Unstar");
-                        dailyWriter.setTransactionSuccessful();
-                    } catch (Exception e) {
-                        Log.e(TAG, "DailyActivity.onClick: ", e);
-                        e.printStackTrace();
-                    } finally {
-                        dailyWriter.endTransaction();
-                        dailyWriter.close();
-                    }
+                final String date = daily.getDate();
+                SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
+                dailyWriter.beginTransaction();
+                try {
+                    ContentValues cv = new ContentValues(1);
+                    cv.put(DailyHelper.COL_STAR, starStatus ? "0" : "1");
+                    dailyWriter.update(DailyHelper.TABLE_NAME,
+                            cv,
+                            DailyHelper.COL_DATE + " = ?",
+                            new String[]{date});
+                    dailyWriter.setTransactionSuccessful();
+                    Toast.makeText(mContext, starStatus ? "Unstar" : "Star", Toast.LENGTH_SHORT).show();
+                } catch (SQLException e) {
+                    Log.e(TAG, "DailyActivity.onClick: ", e);
+                    e.printStackTrace();
+                } finally {
+                    dailyWriter.endTransaction();
+                    dailyWriter.close();
                 }
             }
         });
         ibShare.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 2016/4/4 0004 分享到。。。
                 Toast.makeText(mContext, "Developing...", Toast.LENGTH_SHORT).show();
             }
         });
@@ -227,55 +175,81 @@ public class DailyActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * http://blog.csdn.net/jdsjlzx/article/details/8793896
+     */
     @Override
     protected void onResume() {
         super.onResume();
-        mToolbar.setTitle(daily.getDate());
         wifiOnly = settings.getBoolean(Consts.Setting.CBP_WIFI_ONLY, true);
-        if (new File(TODAY_DIR).exists()) {
+
+        SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
+        dailyReader.beginTransaction();
+        try (Cursor c = dailyReader.query(DailyHelper.TABLE_NAME,
+                null, null, null, null, null,
+                DailyHelper._ID + " desc ",
+                " 0, 1")) {
+            if (c.moveToFirst()) {
+                daily = new Daily();
+                daily.setDate(c.getString(c.getColumnIndex(DailyHelper.COL_DATE)));
+                daily.setEnglish(c.getString(c.getColumnIndex(DailyHelper.COL_ENGLISH)));
+                daily.setChinese(c.getString(c.getColumnIndex(DailyHelper.COL_CHINESE)));
+                daily.setPicture(c.getString(c.getColumnIndex(DailyHelper.COL_PICTURE)));
+                daily.setTts(c.getString(c.getColumnIndex(DailyHelper.COL_TTS)));
+                daily.setComment(c.getString(c.getColumnIndex(DailyHelper.COL_COMMENT)));
+                daily.setStarred(TextUtils.equals(c.getString(c.getColumnIndex(DailyHelper.COL_STAR)), "1"));
+            }
+            dailyReader.setTransactionSuccessful();
+        } catch (Exception e) {
+            Log.e(TAG, "DailyActivity.onResume: ", e);
+            e.printStackTrace();
+        } finally {
+            dailyReader.endTransaction();
+            dailyReader.close();
+        }
+
+        String date = daily.getDate();
+        mToolbar.setTitle(date);
+        loadPicture();
+        tvEnglish.setText(daily.getEnglish());
+        tvChinese.setText(daily.getChinese());
+        setStarImageResource(daily.isStarred());
+        tvComment.setText(daily.getComment());
+
+        if (TextUtils.equals(date, TimeUtils.getSimpleDate())) { // today
             hasNewContent = true;
-            loadLocalDaily();
-        } else {
+        } else { // snapshot
             refreshLayout();
         }
     }
 
-    /**
-     * 从本地更新界面
-     */
-    private void loadLocalDaily() {
-        File pictureFile = new File(TODAY_DIR + File.separator + TODAY + ".jpg");
-        if (pictureFile.exists()) { // 保存图片
+    private void loadPicture() {
+        if (TextUtils.equals(mToolbar.getTitle(), getString(R.string.daily_date))) { // snapshot
             Picasso.with(mContext)
-                    .load(pictureFile)
+                    .load(Integer.parseInt(daily.getPicture()))
                     .transform(normalFormation)
                     .into(ivPicture);
-        }
-        File jsonFile = new File(TODAY_DIR + File.separator + TODAY + ".json");
-        if (jsonFile.exists()) {
-            try {
-                JSONObject obj = new JSONObject(FileUtils.get5json(jsonFile));
-                String date = obj.getString(DailyHelper.COL_DATE);
-                mToolbar.setTitle(date);
-                tvEnglish.setText(obj.getString(DailyHelper.COL_ENGLISH));
-                tvChinese.setText(obj.getString(DailyHelper.COL_CHINESE));
-                tvComment.setText(obj.getString(DailyHelper.COL_COMMENT));
-                setStarStatus(date);
-                daily.setTts(obj.getString(DailyHelper.COL_TTS));
-            } catch (JSONException e) {
-                Log.e(TAG, "DailyActivity.loadLocalDaily: ", e);
-                e.printStackTrace();
+        } else { // new content
+            File pictureFile = new File(Consts.PATH_NOTE_STR, daily.getDate() + ".jpg");
+            if (pictureFile.exists()) {
+                Picasso.with(mContext)
+                        .load(pictureFile)
+                        .transform(normalFormation)
+                        .into(ivPicture);
+            } else {
+                if (NetworkUtils.isNetworkEnabled(mContext)) {
+                    Picasso.with(mContext)
+                            .load(daily.getPicture())
+                            .transform(normalFormation)
+                            .into(ivPicture);
+                } else {
+                    Toast.makeText(mContext, "Network is not available, picture maybe not correspond", Toast.LENGTH_LONG).show();
+                }
             }
         }
     }
 
     private void refreshLayout() {
-        String date = mToolbar.getTitle().toString();
-        setStarStatus(date);
-
-        if (TextUtils.equals(date, TimeUtils.getSimpleDate()))
-            return; // title为日期，与今天相同说明已加载最新内容
-
         // 判断网络连接情况
         if (NetworkUtils.isWifiEnabled(mContext)) {
             new DailySentenceTask().execute();
@@ -310,43 +284,6 @@ public class DailyActivity extends AppCompatActivity {
                             mContext.startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
                         }
                     }).show();
-        }
-    }
-
-    private void setStarStatus(String date) {
-        int starStatus = getStarStatus(date);
-        if (-1 != starStatus) {
-            setStarImageResource(starStatus == 1);
-        }
-    }
-
-    /**
-     * 获取star状态
-     *
-     * @return 1:star 0:unstar -1:error
-     */
-    private int getStarStatus(String date) {
-        SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
-        dailyReader.beginTransaction();
-        try {
-            String sql = "select " + DailyHelper.COL_STAR
-                    + " from " + DailyHelper.TABLE_NAME
-                    + " where " + DailyHelper.COL_DATE + " = ?";
-            SQLiteStatement statement = dailyReader.compileStatement(sql);
-            statement.bindString(1, date);
-            // notice: throw exception if return 0 rows
-            int starStatus = Integer.parseInt(statement.simpleQueryForString());
-            dailyReader.setTransactionSuccessful();
-            return starStatus;
-        } catch (SQLiteDoneException e) {
-            e.printStackTrace();
-            return 0; // new content, thus unstar
-        } catch (Exception e) {
-            e.printStackTrace();
-            return -1; // err
-        } finally {
-            dailyReader.endTransaction();
-            dailyReader.close();
         }
     }
 
@@ -442,25 +379,31 @@ public class DailyActivity extends AppCompatActivity {
                 daily.setTags(json.getJSONArray("tags"));
                 daily.setShare(json.getString("fenxiang_img"));
 
-                // 下载必要文本到本机
+                // Insert into database
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        String date = daily.getDate();
-                        String savePath = Consts.PATH_NOTE_STR + File.separator + date;
-                        if (FileUtils.createDir(savePath)) {
-                            try {
-                                JSONObject obj = new JSONObject();
-                                obj.put(DailyHelper.COL_DATE, date);
-                                obj.put(DailyHelper.COL_ENGLISH, daily.getEnglish());
-                                obj.put(DailyHelper.COL_CHINESE, daily.getChinese());
-                                obj.put(DailyHelper.COL_TTS, daily.getTts());
-                                obj.put(DailyHelper.COL_COMMENT, daily.getComment());
-                                FileUtils.save2json(obj.toString(), savePath, date + ".json");
-                            } catch (JSONException e) {
-                                Log.e(TAG, "DailySentenceTask.run: save json err", e);
-                                e.printStackTrace();
-                            }
+                        SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
+                        dailyWriter.beginTransaction();
+                        try {
+                            ContentValues cv = new ContentValues(6);
+                            cv.put(DailyHelper.COL_DATE, daily.getDate());
+                            cv.put(DailyHelper.COL_ENGLISH, daily.getEnglish());
+                            cv.put(DailyHelper.COL_CHINESE, daily.getChinese());
+                            cv.put(DailyHelper.COL_PICTURE, daily.getPicture());
+                            cv.put(DailyHelper.COL_TTS, daily.getTts());
+                            cv.put(DailyHelper.COL_COMMENT, daily.getComment());
+                            dailyWriter.insertWithOnConflict(DailyHelper.TABLE_NAME,
+                                    null,
+                                    cv,
+                                    SQLiteDatabase.CONFLICT_IGNORE);
+                            dailyWriter.setTransactionSuccessful();
+                        } catch (Exception e) {
+                            Log.e(TAG, "DailySentenceTask.run: ", e);
+                            e.printStackTrace();
+                        } finally {
+                            dailyWriter.endTransaction();
+                            dailyWriter.close();
                         }
                     }
                 }).start();
@@ -531,7 +474,7 @@ public class DailyActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     String date = daily.getDate();
-                    String savePath = Consts.PATH_NOTE_STR + File.separator + date;
+                    String savePath = Consts.PATH_NOTE_STR;
                     if (FileUtils.createDir(savePath)) {
                         try (FileOutputStream fos = new FileOutputStream(new File(savePath, date + ".jpg"))) {
                             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
@@ -570,7 +513,7 @@ public class DailyActivity extends AppCompatActivity {
 
         @Override
         public String key() {
-            return TODAY;
+            return daily.getDate();
         }
     };
 }

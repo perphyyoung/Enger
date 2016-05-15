@@ -22,7 +22,6 @@ public class Daily {
     private String sp_pv; //语音评测浏览数
     private JSONArray tags; //相关标签
     private String share; //分享图片(fenxiang_img)
-
     private boolean starred;
 
     public Daily() { }
@@ -117,5 +116,9 @@ public class Daily {
 
     public void setStarred(boolean starred) {
         this.starred = starred;
+    }
+
+    public boolean isStarred() {
+        return starred;
     }
 }

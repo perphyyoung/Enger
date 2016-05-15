@@ -23,10 +23,10 @@ public class DailyHelper extends SQLiteOpenHelper {
     public static final String COL_DATE = "date";
     public static final String COL_ENGLISH = "english";
     public static final String COL_CHINESE = "chinese";
-    public static final String COL_STAR = "star";
-    public static final String COL_COMMENT = "comment";
-
+    public static final String COL_PICTURE = "picture";
     public static final String COL_TTS = "tts";
+    public static final String COL_COMMENT = "comment";
+    public static final String COL_STAR = "star";
 
     private DailyHelper(Context context) {
         super(context, TABLE_NAME, null, 1);
@@ -44,6 +44,9 @@ public class DailyHelper extends SQLiteOpenHelper {
                 + COL_DATE + " text unique not null, "
                 + COL_ENGLISH + " text, "
                 + COL_CHINESE + " text, "
+                + COL_PICTURE + " text, "
+                + COL_TTS + " text, "
+                + COL_COMMENT + " text, "
                 + COL_STAR + " boolean default 0)";
         db.execSQL(CREATE_DB);
 
@@ -52,6 +55,9 @@ public class DailyHelper extends SQLiteOpenHelper {
         cv.put(COL_DATE, mContext.getString(R.string.daily_date));
         cv.put(COL_ENGLISH, mContext.getString(R.string.daily_english));
         cv.put(COL_CHINESE, mContext.getString(R.string.daily_chinese));
+        cv.put(COL_PICTURE, R.drawable.placeholder + "");
+        cv.put(COL_TTS, mContext.getString(R.string.daily_tts));
+        cv.put(COL_COMMENT, mContext.getString(R.string.daily_comment));
         db.beginTransaction();
         try {
             db.insertOrThrow(TABLE_NAME, null, cv);
