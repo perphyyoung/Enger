@@ -116,6 +116,8 @@ public class RvAdapterNoteList
         holder.setSelected(position);
 
         final SwipeMenuLayout itemView = (SwipeMenuLayout) holder.itemView;
+        itemView.setSwipeEnable(mActionMode == null);
+
         itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -153,6 +155,7 @@ public class RvAdapterNoteList
                     mActionMode = act.startSupportActionMode(mCallback);
                     itemView.setBackgroundResource(R.drawable.bg_selected);
                     selectedSet.add(holder.getAdapterPosition());
+                    notifyDataSetChanged();
                 }
                 return true;
             }
@@ -291,11 +294,6 @@ public class RvAdapterNoteList
         }
         updateView();
         NoteHelper.delete(act, toRemoveIdList);
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return super.getItemViewType(position);
     }
 
     @Override
