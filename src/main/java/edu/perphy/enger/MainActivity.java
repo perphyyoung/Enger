@@ -49,7 +49,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 import edu.perphy.enger.adapter.WordAutoCompleteArrayAdapter;
 import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.db.OxfordHelper;
-import edu.perphy.enger.fragment.AboutDialogFragment;
+import edu.perphy.enger.fragment.BaseDialogFragment;
 import edu.perphy.enger.thread.UpdateDefinitionTask;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.FileUtils;
@@ -529,7 +529,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(new Intent(mContext, IntroActivity.class));
                 break;
             case R.id.nav_about:
-                AboutDialogFragment dialog = new AboutDialogFragment();
+                BaseDialogFragment dialog = BaseDialogFragment.newInstance(R.layout.fragment_about_dialog);
                 dialog.show(getSupportFragmentManager(), TAG_LOADING_DIALOG);
                 dialog.setCancelable(true);
                 break;

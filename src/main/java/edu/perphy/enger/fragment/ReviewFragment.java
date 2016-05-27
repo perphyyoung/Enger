@@ -213,12 +213,12 @@ public class ReviewFragment extends Fragment {
     }
 
     private class RandomTask extends AsyncTask<Integer, Void, Void> {
-        LoadingDialogFragment loadingDialogFragment;
+        BaseDialogFragment dialog;
 
         @Override
         protected void onPreExecute() {
-            loadingDialogFragment = new LoadingDialogFragment();
-            loadingDialogFragment.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), TAG_LOADING_DIALOG);
+            dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+            dialog.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), TAG_LOADING_DIALOG);
         }
 
         @Override
@@ -256,7 +256,7 @@ public class ReviewFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            loadingDialogFragment.dismiss();
+            dialog.dismiss();
             if (mWordList.size() > 0) {
                 wvDef.loadDataWithBaseURL(null, mWordList.get(0).getDef().replaceAll("\n", "<br>"), "text/html", "utf-8", null);
             }
@@ -264,13 +264,13 @@ public class ReviewFragment extends Fragment {
     }
 
     private class GenerateTask extends AsyncTask<Void, Void, Boolean> {
-        LoadingDialogFragment loadingDialogFragment;
+        BaseDialogFragment dialog;
         ArrayList<Word> wordList;
 
         @Override
         protected void onPreExecute() {
-            loadingDialogFragment = new LoadingDialogFragment();
-            loadingDialogFragment.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), TAG_LOADING_DIALOG);
+            dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+            dialog.show(((AppCompatActivity) getContext()).getSupportFragmentManager(), TAG_LOADING_DIALOG);
         }
 
         @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -374,7 +374,7 @@ public class ReviewFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Boolean isGenerateSuccess) {
-            loadingDialogFragment.dismiss();
+            dialog.dismiss();
             if (isGenerateSuccess) {
                 new RandomTask().execute(reviewCount + wordList.size());
             } else {

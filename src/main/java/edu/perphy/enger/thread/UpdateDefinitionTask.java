@@ -45,7 +45,7 @@ import edu.perphy.enger.db.InternalHelper;
 import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.db.ReviewHelper;
 import edu.perphy.enger.db.StarDictHelper;
-import edu.perphy.enger.fragment.LoadingDialogFragment;
+import edu.perphy.enger.fragment.BaseDialogFragment;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.TimeUtils;
 
@@ -66,7 +66,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     private AssetManager am;
     private MyDefinitionHandler myDefinitionHandler;
     private RecyclerView rvDefinitionContainer;
-    LoadingDialogFragment loadingDialogFragment;
+    BaseDialogFragment dialog;
 
     private InternalHelper internalHelper;
     private DictListHelper listHelper;
@@ -93,8 +93,8 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
     @Override
     protected void onPreExecute() {
         mDefList.clear();
-        loadingDialogFragment = new LoadingDialogFragment();
-        loadingDialogFragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), TAG_LOADING_DIALOG);
+        dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+        dialog.show(((AppCompatActivity) mContext).getSupportFragmentManager(), TAG_LOADING_DIALOG);
     }
 
     @Override
@@ -322,7 +322,7 @@ public class UpdateDefinitionTask extends AsyncTask<String, Void, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean hasDefinition) {
-        loadingDialogFragment.dismiss();
+        dialog.dismiss();
         if (hasDefinition) {
             rvDefinitionContainer.setAdapter(rvAdapterDefinition);
         } else {

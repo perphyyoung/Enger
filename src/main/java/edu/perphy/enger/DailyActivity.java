@@ -47,7 +47,7 @@ import java.net.URL;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.fragment.LoadingDialogFragment;
+import edu.perphy.enger.fragment.BaseDialogFragment;
 import edu.perphy.enger.util.CharUtils;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.FileUtils;
@@ -330,12 +330,12 @@ public class DailyActivity extends AppCompatActivity {
         private static final int SUCCESS = 1;
         private static final int ERR_NETWORK = 2;
         private static final int ERR_JSON = 3;
-        LoadingDialogFragment loadingDialogFragment;
+        BaseDialogFragment dialog;
 
         @Override
         protected void onPreExecute() {
-            loadingDialogFragment = new LoadingDialogFragment();
-            loadingDialogFragment.show(getSupportFragmentManager(), TAG_LOADING_DIALOG);
+            dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+            dialog.show(getSupportFragmentManager(), TAG_LOADING_DIALOG);
         }
 
         @Override
@@ -408,7 +408,7 @@ public class DailyActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Integer status) {
-            loadingDialogFragment.dismiss();
+            dialog.dismiss();
             switch (status) {
                 case ERR_JSON:
                     new Toaster(mContext).showCenterToast("Parse json error");
@@ -434,7 +434,7 @@ public class DailyActivity extends AppCompatActivity {
             tvChinese.setText(daily.getChinese());
             String pictureStr = daily.getPicture();
             if (pictureStr != null) {
-                loadingDialogFragment.dismiss();
+                dialog.dismiss();
                 Picasso.with(mContext)
                         .load(pictureStr)
                         .transform(normalFormation)

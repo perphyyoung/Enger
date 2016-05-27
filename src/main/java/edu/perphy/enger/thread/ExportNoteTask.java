@@ -10,11 +10,12 @@ import android.widget.Toast;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import edu.perphy.enger.R;
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.fragment.LoadingDialogFragment;
+import edu.perphy.enger.fragment.BaseDialogFragment;
 import edu.perphy.enger.util.Consts;
-import edu.perphy.enger.util.TimeUtils;
 import edu.perphy.enger.util.FileUtils;
+import edu.perphy.enger.util.TimeUtils;
 
 import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
 
@@ -28,7 +29,7 @@ public class ExportNoteTask extends AsyncTask<Void, Integer, Integer> {
     private final int EMPTY = 3;
     private Context mContext;
     private NoteHelper noteHelper;
-    LoadingDialogFragment loadingDialogFragment;
+    BaseDialogFragment dialog;
     private int exportCount = 0;
 
     public ExportNoteTask(Context context) {
@@ -38,8 +39,8 @@ public class ExportNoteTask extends AsyncTask<Void, Integer, Integer> {
 
     @Override
     protected void onPreExecute() {
-        loadingDialogFragment = new LoadingDialogFragment();
-        loadingDialogFragment.show(((AppCompatActivity) mContext).getSupportFragmentManager(), TAG_LOADING_DIALOG);
+        dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+        dialog.show(((AppCompatActivity) mContext).getSupportFragmentManager(), TAG_LOADING_DIALOG);
     }
 
     @Override
@@ -80,7 +81,7 @@ public class ExportNoteTask extends AsyncTask<Void, Integer, Integer> {
 
     @Override
     protected void onPostExecute(Integer status) {
-        loadingDialogFragment.dismiss();
+        dialog.dismiss();
         switch (status) {
             case EMPTY:
                 Toast.makeText(mContext, "Nothing to export!", Toast.LENGTH_SHORT).show();

@@ -15,10 +15,11 @@ import java.io.File;
 import java.util.ArrayList;
 
 import edu.perphy.enger.NoteListActivity;
+import edu.perphy.enger.R;
 import edu.perphy.enger.adapter.RvAdapterNoteList;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
-import edu.perphy.enger.fragment.LoadingDialogFragment;
+import edu.perphy.enger.fragment.BaseDialogFragment;
 import edu.perphy.enger.util.Consts;
 import edu.perphy.enger.util.FileUtils;
 
@@ -37,7 +38,7 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
     private NoteListActivity act;
     private ArrayList<Note> mNoteList;
     private NoteHelper noteHelper;
-    LoadingDialogFragment loadingDialogFragment;
+    BaseDialogFragment dialog;
     private int importCount = 0;
 
     public ImportNoteTask(Context context) {
@@ -48,8 +49,8 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
 
     @Override
     protected void onPreExecute() {
-        loadingDialogFragment = new LoadingDialogFragment();
-        loadingDialogFragment.show(act.getSupportFragmentManager(), TAG_LOADING_DIALOG);
+        dialog = BaseDialogFragment.newInstance(R.layout.fragment_loading_dialog);
+        dialog.show(act.getSupportFragmentManager(), TAG_LOADING_DIALOG);
     }
 
     @Override
@@ -82,7 +83,7 @@ public class ImportNoteTask extends AsyncTask<Void, Void, Integer> {
 
     @Override
     protected void onPostExecute(Integer status) {
-        loadingDialogFragment.dismiss();
+        dialog.dismiss();
         switch (status) {
             case EMPTY:
                 Toast.makeText(act, "Nothing to import!", Toast.LENGTH_SHORT).show();
