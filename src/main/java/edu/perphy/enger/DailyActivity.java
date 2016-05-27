@@ -67,7 +67,6 @@ public class DailyActivity extends AppCompatActivity {
     private MediaPlayer player;
     private Toolbar mToolbar;
     private boolean wifiOnly;
-    private boolean hasNewContent = false;
     private int screenWidth;
     private Daily daily;
     private ImageView ivPicture, ibStar, ibShare, ibSound;
@@ -216,9 +215,7 @@ public class DailyActivity extends AppCompatActivity {
         setStarImageResource(daily.isStarred());
         tvComment.setText(daily.getComment());
 
-        if (TextUtils.equals(date, TimeUtils.getSimpleDate())) { // today
-            hasNewContent = true;
-        } else { // snapshot
+        if (!TextUtils.equals(date, TimeUtils.getSimpleDate())) {
             refreshLayout();
         }
     }
@@ -306,19 +303,7 @@ public class DailyActivity extends AppCompatActivity {
                 refreshLayout();
                 return true;
             case R.id.action_add:
-                if (hasNewContent) {
-                    saveSentence2note();
-                } else {
-                    new AlertDialog.Builder(mContext)
-                            .setTitle("Save to note")
-                            .setMessage("You are about saving the content of 2016-03-29. Continue?")
-                            .setPositiveButton("Continue", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    saveSentence2note();
-                                }
-                            }).setNegativeButton("Cancel", null).show();
-                }
+                saveSentence2note();
                 return true;
             case R.id.action_stars:
                 startActivity(new Intent(mContext, StarActivity.class));
@@ -379,6 +364,8 @@ public class DailyActivity extends AppCompatActivity {
                 daily.setTags(json.getJSONArray("tags"));
                 daily.setShare(json.getString("fenxiang_img"));
 
+                daily.setStarred(false);
+
                 // Insert into database
                 new Thread(new Runnable() {
                     @Override
@@ -424,11 +411,9 @@ public class DailyActivity extends AppCompatActivity {
             loadingDialogFragment.dismiss();
             switch (status) {
                 case ERR_JSON:
-                    hasNewContent = false;
                     new Toaster(mContext).showCenterToast("Parse json error");
                     return;
                 case ERR_NETWORK:
-                    hasNewContent = false;
                     Snackbar.make(ivPicture, "Network timeout.", Snackbar.LENGTH_INDEFINITE)
                             .setAction("Reload", new View.OnClickListener() {
                                 @Override
@@ -438,7 +423,6 @@ public class DailyActivity extends AppCompatActivity {
                             }).show();
                     return;
                 case SUCCESS:
-                    hasNewContent = true;
                     break;
             }
 
