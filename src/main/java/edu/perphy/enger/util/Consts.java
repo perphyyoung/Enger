@@ -60,6 +60,7 @@ public class Consts {
     public static final int PARSE_DICT_INPUT_SCREAM_ERR = 33;
 
     public static final String TAG_LOADING_DIALOG = "loadingDialog";
+    public static final String TAG_DICT_DIALOG = "dictDialog";
 }
 
 

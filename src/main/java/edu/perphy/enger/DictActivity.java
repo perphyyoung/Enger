@@ -36,7 +36,7 @@ public class DictActivity extends AppCompatActivity {
             rvDict.setLayoutManager(new LinearLayoutManager(mContext));
             rvDict.setOpenInterpolator(new BounceInterpolator());
             rvDict.setCloseInterpolator(new BounceInterpolator());
-            rvDict.setAdapter(new RvAdapterDictList(mContext));
+            rvDict.setAdapter(new RvAdapterDictList(this));
         }
 
         final FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -45,7 +45,7 @@ public class DictActivity extends AppCompatActivity {
                 @Override
                 public void onClick(View v) {
                     // 更新词典列表
-                    new UpdateDictListTask(mContext).execute();
+                    new UpdateDictListTask(DictActivity.this).execute();
                 }
             });
         }

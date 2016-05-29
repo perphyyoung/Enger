@@ -2,7 +2,6 @@ package edu.perphy.enger.adapter;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
@@ -21,26 +20,29 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 
+import edu.perphy.enger.DictActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.data.Dict;
 import edu.perphy.enger.db.DictInfoHelper;
 import edu.perphy.enger.db.DictListHelper;
+import edu.perphy.enger.fragment.DictDialogFragment;
 
 import static edu.perphy.enger.util.Consts.TAG;
+import static edu.perphy.enger.util.Consts.TAG_DICT_DIALOG;
 
 /**
  * Created by perphy on 2016/2/27 0027.
  * 从info数据库中读取词典列表信息，并填充到词典列表
  */
 public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.DictListViewHolder> {
-    private Context mContext;
+    private DictActivity act;
     private DictListHelper listHelper;
     private ArrayList<Dict> mDictList;
 
-    public RvAdapterDictList(Context context) {
-        mContext = context;
-        listHelper = DictListHelper.getInstance(mContext);
-        DictInfoHelper infoHelper = DictInfoHelper.getInstance(mContext);
+    public RvAdapterDictList(DictActivity act) {
+        this.act = act;
+        listHelper = DictListHelper.getInstance(act);
+        DictInfoHelper infoHelper = DictInfoHelper.getInstance(act);
         mDictList = new ArrayList<>();
         SQLiteDatabase infoReader = infoHelper.getReadableDatabase();
         infoReader.beginTransaction();
@@ -81,8 +83,9 @@ public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.Di
         holder.ibInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: 2016/4/6 0006 词典信息
-                Toast.makeText(mContext, "info", Toast.LENGTH_SHORT).show();
+                DictDialogFragment dialog = DictDialogFragment.newInstance(d.getDictId());
+                dialog.show(act.getSupportFragmentManager(), TAG_DICT_DIALOG);
+                dialog.setCancelable(true);
             }
         });
 
@@ -103,7 +106,7 @@ public class RvAdapterDictList extends RecyclerView.Adapter<RvAdapterDictList.Di
                             DictListHelper.COL_DICT_ID + " = ?",
                             new String[]{d.getDictId()});
                     listWriter.setTransactionSuccessful();
-                    Toast.makeText(mContext, isChecked ? "Enable" : "Disable", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(act, isChecked ? "Enable" : "Disable", Toast.LENGTH_SHORT).show();
                 } catch (SQLException e) {
                     Log.e(TAG, "RvAdapterDictList.onCheckedChanged: ", e);
                     e.printStackTrace();

@@ -8,13 +8,13 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.widget.Toast;
 
 import java.util.concurrent.FutureTask;
 
+import edu.perphy.enger.DictActivity;
 import edu.perphy.enger.R;
 import edu.perphy.enger.adapter.RvAdapterDictList;
 import edu.perphy.enger.util.Consts;
@@ -27,17 +27,17 @@ import static edu.perphy.enger.util.Consts.TAG;
  * 更新词典列表的AsyncTask
  */
 public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
-    private Context mContext;
+    private DictActivity act;
     private SharedPreferences preferences;
     private FloatingActionButton fab;
     private RecyclerView rvDict;
 
     private MyUpdateDictListHandler myUpdateDictListHandler;
 
-    public UpdateDictListTask(Context context) {
-        this.mContext = context;
-        this.preferences = context.getSharedPreferences(Consts.SP_NAME, Context.MODE_PRIVATE);
-        this.rvDict = (RecyclerView) ((AppCompatActivity) context).findViewById(R.id.rvDict);
+    public UpdateDictListTask(DictActivity act) {
+        this.act = act;
+        this.preferences = act.getSharedPreferences(Consts.SP_NAME, Context.MODE_PRIVATE);
+        this.rvDict = (RecyclerView) act.findViewById(R.id.rvDict);
 
         HandlerThread handlerThread = new HandlerThread(Consts.HANDLER_THREAD_UPDATE_DICT_LIST);
         handlerThread.start();
@@ -46,7 +46,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected void onPreExecute() {
-        fab = (FloatingActionButton) ((AppCompatActivity) mContext).findViewById(R.id.fab);
+        fab = (FloatingActionButton) act.findViewById(R.id.fab);
         if (fab != null)
             fab.setImageResource(android.R.drawable.ic_popup_sync);
     }
@@ -60,7 +60,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
      */
     @Override
     protected Boolean doInBackground(Void... params) {
-        return parseIfoPath(mContext) && parseIfoFile(mContext) && parseIdxFile(mContext);
+        return parseIfoPath(act) && parseIfoFile(act) && parseIdxFile(act);
     }
 
     /**
@@ -160,7 +160,7 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
         if (success) {
             preferences.edit().putBoolean(Consts.SP_IDX_LOADED, true).apply();
 
-            RvAdapterDictList mAdapter = new RvAdapterDictList(mContext);
+            RvAdapterDictList mAdapter = new RvAdapterDictList(act);
             rvDict.setAdapter(mAdapter);
         }
 
@@ -176,15 +176,15 @@ public class UpdateDictListTask extends AsyncTask<Void, Void, Boolean> {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case Consts.PARSE_IFO_PATH_NOT_NEW_LOAD:
-                    Toast.makeText(mContext, "No new dictionary to load!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(act, "No new dictionary to load!", Toast.LENGTH_SHORT).show();
                     break;
                 case Consts.PARSE_IFO_NOT_NEW_LOAD:
                 case Consts.PARSE_IDX_NOT_NEW_LOAD:
-                    Toast.makeText(mContext, "The list is the latest already!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(act, "The list is the latest already!", Toast.LENGTH_SHORT).show();
                     break;
                 case Consts.PARSE_IDX_SUCCESS:
                     int successfulLoadCount = msg.arg1;
-                    Toast.makeText(mContext, "Load " + successfulLoadCount + " new dictionary successfully",
+                    Toast.makeText(act, "Load " + successfulLoadCount + " new dictionary successfully",
                             Toast.LENGTH_SHORT).show();
                     break;
             }
