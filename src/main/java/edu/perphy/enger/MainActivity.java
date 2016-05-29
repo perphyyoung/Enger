@@ -57,7 +57,7 @@ import edu.perphy.enger.widget.XAutoCompleteTextView;
 
 import static edu.perphy.enger.util.Consts.DEBUG;
 import static edu.perphy.enger.util.Consts.TAG;
-import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
+import static edu.perphy.enger.util.Consts.TAG_ABOUT_DIALOG;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -530,7 +530,7 @@ public class MainActivity extends AppCompatActivity
                 break;
             case R.id.nav_about:
                 BaseDialogFragment dialog = BaseDialogFragment.newInstance(R.layout.fragment_about_dialog);
-                dialog.show(getSupportFragmentManager(), TAG_LOADING_DIALOG);
+                dialog.show(getSupportFragmentManager(), TAG_ABOUT_DIALOG);
                 dialog.setCancelable(true);
                 break;
             case R.id.nav_quit:
