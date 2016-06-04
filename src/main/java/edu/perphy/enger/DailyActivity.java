@@ -55,6 +55,7 @@ import edu.perphy.enger.util.NetworkUtils;
 import edu.perphy.enger.util.TimeUtils;
 import edu.perphy.enger.util.Toaster;
 
+import static edu.perphy.enger.util.Consts.INTENT_TAB_POSITION;
 import static edu.perphy.enger.util.Consts.TAG;
 import static edu.perphy.enger.util.Consts.TAG_LOADING_DIALOG;
 
@@ -306,7 +307,9 @@ public class DailyActivity extends AppCompatActivity {
                 saveSentence2note();
                 return true;
             case R.id.action_stars:
-                startActivity(new Intent(mContext, StarActivity.class));
+                Intent intent = new Intent(mContext, StarActivity.class);
+                intent.putExtra(INTENT_TAB_POSITION, 2);
+                startActivity(intent);
                 return true;
             case R.id.action_settings:
                 startActivity(new Intent(mContext, SettingsActivity.class));

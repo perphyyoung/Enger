@@ -22,12 +22,15 @@ import edu.perphy.enger.fragment.DailyStarFragment;
 import edu.perphy.enger.fragment.NoteStarFragment;
 import edu.perphy.enger.fragment.ReviewStarFragment;
 
+import static edu.perphy.enger.util.Consts.INTENT_TAB_POSITION;
+
 public class StarActivity extends AppCompatActivity
         implements NoteStarFragment.OnNoteFragmentInteractionListener,
         ReviewStarFragment.OnWordFragmentInteractionListener,
         DailyStarFragment.OnDailyFragmentInteractionListener {
     private Context mContext;
 
+    @SuppressWarnings("ConstantConditions")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +51,13 @@ public class StarActivity extends AppCompatActivity
         if (mViewPager != null) mViewPager.setAdapter(mSectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
-        if (tabLayout != null) tabLayout.setupWithViewPager(mViewPager);
+        if (tabLayout != null) {
+            tabLayout.setupWithViewPager(mViewPager);
+
+            Intent intent = getIntent();
+            int pos = intent.getIntExtra(INTENT_TAB_POSITION, 0);
+            tabLayout.getTabAt(pos).select();
+        }
     }
 
     @Override

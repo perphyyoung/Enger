@@ -62,6 +62,8 @@ public class Consts {
     public static final String TAG_LOADING_DIALOG = "loadingDialog";
     public static final String TAG_ABOUT_DIALOG = "aboutDialog";
     public static final String TAG_DICT_DIALOG = "dictDialog";
+
+    public static final String INTENT_TAB_POSITION = "intentTabPosition";
 }
 
 

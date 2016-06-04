@@ -21,6 +21,8 @@ import edu.perphy.enger.fragment.ChartFragment;
 import edu.perphy.enger.fragment.ReviewFragment;
 import edu.perphy.enger.util.Consts;
 
+import static edu.perphy.enger.util.Consts.INTENT_TAB_POSITION;
+
 public class ReviewActivity extends AppCompatActivity
         implements ReviewFragment.OnReviewFragmentInteractionListener,
         ChartFragment.OnChartFragmentInteractionListener {
@@ -98,7 +100,9 @@ public class ReviewActivity extends AppCompatActivity
                 }
                 return true;
             case R.id.action_stars:
-                startActivity(new Intent(mContext, StarActivity.class));
+                Intent intent = new Intent(mContext, StarActivity.class);
+                intent.putExtra(INTENT_TAB_POSITION, 1);
+                startActivity(intent);
                 return true;
             case R.id.action_settings:
                 startActivity(new Intent(mContext, SettingsActivity.class));
