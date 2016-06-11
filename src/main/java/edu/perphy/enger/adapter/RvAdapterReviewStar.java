@@ -5,16 +5,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.jauker.widget.BadgeView;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import edu.perphy.enger.R;
+import edu.perphy.enger.StarActivity;
 import edu.perphy.enger.data.Word;
 import edu.perphy.enger.db.ReviewHelper;
 import edu.perphy.enger.fragment.ReviewStarFragment;
@@ -24,12 +28,14 @@ import static edu.perphy.enger.util.Consts.TAG;
 
 public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewStar.ViewHolder> {
     private ReviewStarFragment fragment;
+    private StarActivity act;
     private final List<Word> mReviewList;
     private final ReviewHelper reviewHelper;
     private final OnWordFragmentInteractionListener mListener;
 
     public RvAdapterReviewStar(ReviewStarFragment fragment, OnWordFragmentInteractionListener listener) {
         this.fragment = fragment;
+        act = (StarActivity) fragment.getActivity();
         mListener = listener;
         reviewHelper = ReviewHelper.getInstance(fragment.getContext());
         mReviewList = new ArrayList<>();
@@ -55,7 +61,15 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
         updateView();
     }
 
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
     private void updateView() {
+        TextView tv = (TextView) act.tabLayout.getTabAt(1).getCustomView();
+        BadgeView bv = new BadgeView(act);
+        bv.setBadgeCount(mReviewList.size());
+        bv.setTextColor(act.getResources().getColor(R.color.colorAccent));
+        bv.setBadgeGravity(Gravity.TOP | Gravity.END);
+        bv.setTargetView(tv);
+
         if (mReviewList.isEmpty()) {
             fragment.rvReviewList.setVisibility(View.GONE);
             fragment.emptyList.setVisibility(View.VISIBLE);
@@ -107,6 +121,7 @@ public class RvAdapterReviewStar extends RecyclerView.Adapter<RvAdapterReviewSta
 
                     mReviewList.remove(holder.getAdapterPosition());
                     notifyItemRemoved(holder.getAdapterPosition());
+                    updateView();
                 } catch (Exception e) {
                     Log.e(TAG, "RvAdapterReviewStar.onClick: ", e);
                     e.printStackTrace();

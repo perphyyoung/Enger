@@ -1,7 +1,6 @@
 package edu.perphy.enger.adapter;
 
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -9,16 +8,20 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.jauker.widget.BadgeView;
+
 import java.util.ArrayList;
 
 import edu.perphy.enger.NoteDetailActivity;
 import edu.perphy.enger.R;
+import edu.perphy.enger.StarActivity;
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.db.DailyHelper;
 import edu.perphy.enger.db.NoteHelper;
@@ -31,17 +34,17 @@ import edu.perphy.enger.fragment.DailyStarFragment.OnDailyFragmentInteractionLis
  */
 public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.ViewHolder> {
     private DailyStarFragment fragment;
-    private final Context mContext;
+    private StarActivity act;
     private final OnDailyFragmentInteractionListener mListener;
     private final ArrayList<Daily> mDailyList;
     private final DailyHelper dailyHelper;
 
     public RvAdapterDailyStar(DailyStarFragment fragment, OnDailyFragmentInteractionListener listener) {
         this.fragment = fragment;
-        mContext = fragment.getContext();
+        act = (StarActivity) fragment.getActivity();
         mListener = listener;
         mDailyList = new ArrayList<>();
-        dailyHelper = DailyHelper.getInstance(mContext);
+        dailyHelper = DailyHelper.getInstance(act);
 
         SQLiteDatabase dailyReader = dailyHelper.getReadableDatabase();
         dailyReader.beginTransaction();
@@ -67,7 +70,15 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
         updateView();
     }
 
+    @SuppressWarnings({"ConstantConditions", "deprecation"})
     private void updateView() {
+        TextView tv = (TextView) act.tabLayout.getTabAt(2).getCustomView();
+        BadgeView bv = new BadgeView(act);
+        bv.setBadgeCount(mDailyList.size());
+        bv.setTextColor(act.getResources().getColor(R.color.colorAccent));
+        bv.setBadgeGravity(Gravity.TOP | Gravity.END);
+        bv.setTargetView(tv);
+
         if (mDailyList.isEmpty()) {
             fragment.rvDailyList.setVisibility(View.GONE);
             fragment.emptyList.setVisibility(View.VISIBLE);
@@ -97,7 +108,7 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
         holder.ibStar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AlertDialog.Builder(mContext)
+                new AlertDialog.Builder(act)
                         .setTitle("Notice")
                         .setMessage("Unstar will delete this card from the database. " +
                                 "Otherwise, you can make this card as a note. " +
@@ -108,7 +119,7 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                                 SQLiteDatabase dailyWriter = dailyHelper.getWritableDatabase();
                                 dailyWriter.beginTransaction();
                                 try {
-                                    if (TextUtils.equals(date, mContext.getResources().getString(R.string.daily_date))) {
+                                    if (TextUtils.equals(date, act.getResources().getString(R.string.daily_date))) {
                                         ContentValues cv = new ContentValues();
                                         cv.put(DailyHelper.COL_STAR, "0"); // unstar
                                         dailyWriter.update(DailyHelper.TABLE_NAME,
@@ -136,12 +147,12 @@ public class RvAdapterDailyStar extends RecyclerView.Adapter<RvAdapterDailyStar.
                         .setNeutralButton("Make a note", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(mContext, NoteDetailActivity.class);
+                                Intent intent = new Intent(act, NoteDetailActivity.class);
                                 intent.putExtra(NoteHelper.COL_TOBE_SAVE, true);
                                 intent.putExtra(NoteHelper.COL_TITLE, "day_" + date);
                                 intent.putExtra(NoteHelper.COL_CONTENT,
                                         daily.getEnglish() + "\n" + daily.getChinese());
-                                mContext.startActivity(intent);
+                                act.startActivity(intent);
                             }
                         }).show();
             }

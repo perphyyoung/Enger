@@ -7,15 +7,19 @@ import android.database.sqlite.SQLiteStatement;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import com.jauker.widget.BadgeView;
+
 import java.util.ArrayList;
 
 import edu.perphy.enger.R;
+import edu.perphy.enger.StarActivity;
 import edu.perphy.enger.data.Note;
 import edu.perphy.enger.db.NoteHelper;
 import edu.perphy.enger.fragment.NoteStarFragment;
@@ -29,12 +33,14 @@ import static edu.perphy.enger.util.Consts.TAG;
  */
 public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.ViewHolder> {
     private NoteStarFragment fragment;
+    private StarActivity act;
     private final OnNoteFragmentInteractionListener mListener;
     private final NoteHelper noteHelper;
     private final ArrayList<Note> mNoteList;
 
     public RvAdapterNoteStar(NoteStarFragment fragment, OnNoteFragmentInteractionListener listener) {
         this.fragment = fragment;
+        act = (StarActivity) fragment.getActivity();
         mListener = listener;
         noteHelper = NoteHelper.getInstance(fragment.getContext());
         mNoteList = new ArrayList<>();
@@ -62,7 +68,15 @@ public class RvAdapterNoteStar extends RecyclerView.Adapter<RvAdapterNoteStar.Vi
         updateView();
     }
 
+    @SuppressWarnings({"deprecation", "ConstantConditions"})
     private void updateView() {
+        TextView tv = (TextView) act.tabLayout.getTabAt(0).getCustomView();
+        BadgeView bv = new BadgeView(act);
+        bv.setBadgeCount(mNoteList.size());
+        bv.setTextColor(act.getResources().getColor(R.color.colorAccent));
+        bv.setBadgeGravity(Gravity.TOP | Gravity.END);
+        bv.setTargetView(tv);
+
         if (mNoteList.isEmpty()) {
             fragment.rvNoteList.setVisibility(View.GONE);
             fragment.emptyList.setVisibility(View.VISIBLE);

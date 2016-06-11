@@ -11,8 +11,10 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import edu.perphy.enger.data.Daily;
 import edu.perphy.enger.data.Note;
@@ -29,6 +31,7 @@ public class StarActivity extends AppCompatActivity
         ReviewStarFragment.OnWordFragmentInteractionListener,
         DailyStarFragment.OnDailyFragmentInteractionListener {
     private Context mContext;
+    public TabLayout tabLayout;
 
     @SuppressWarnings("ConstantConditions")
     @Override
@@ -50,13 +53,26 @@ public class StarActivity extends AppCompatActivity
         ViewPager mViewPager = (ViewPager) findViewById(R.id.container);
         if (mViewPager != null) mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
+        tabLayout = (TabLayout) findViewById(R.id.tabs);
         if (tabLayout != null) {
             tabLayout.setupWithViewPager(mViewPager);
 
             Intent intent = getIntent();
             int pos = intent.getIntExtra(INTENT_TAB_POSITION, 0);
             tabLayout.getTabAt(pos).select();
+
+            setTabTitles();
+        }
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    void setTabTitles() {
+        int lengthOfTitles = 3;
+        for (int i = 0; i < lengthOfTitles; i++) {
+            TextView tv = new TextView(mContext);
+            tv.setId(android.R.id.text1);
+            tv.setGravity(Gravity.CENTER_HORIZONTAL);
+            tabLayout.getTabAt(i).setCustomView(tv);
         }
     }
 
